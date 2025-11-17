@@ -57,7 +57,14 @@ typedef struct {
     float y;
 } FloatPoint;
 
-
+/*追加
+スティック入力状態*/
+typedef struct {
+    SDL_bool up;   //上
+    SDL_bool down; //下
+    SDL_bool left; //左
+    SDL_bool right;//右
+}Direction;
 
 /* キャラクターの情報 */
 typedef struct {
