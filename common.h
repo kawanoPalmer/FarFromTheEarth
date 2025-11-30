@@ -9,13 +9,16 @@
 #include<math.h>
 #include <SDL2/SDL.h>
 #include <joyconlib.h> 
+#include<SDL2/SDL_image.h>
+#include<SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL_ttf.h>
 
 #define PORT			(u_short)8888	/* ポート番号 */
 
 #define MAX_CLIENTS		4				/* クライアント数の最大値 */
-//#define MAX_NAME_SIZE	10 				/* ユーザー名の最大値*/
+#define MAX_NAME_SIZE	10 				/* ユーザー名の最大値*/
 
-#define MAX_DATA		200				/* 送受信するデータの最大値 */
+#define MAX_DATA		20000				/* 送受信するデータの最大値 */
 
 #define CHARATYPE_MAXNUM 4 // キャラタイプ総数
 #define CHARA_NUM 7 //クライアント(4) + ゴール(1) + 敵(1) + 宇宙船(1)

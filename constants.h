@@ -6,7 +6,7 @@
 #define MAX_NUM_CLIENTS 4
 #define MAX_LEN_NAME 32
 #define MAX_LEN_ADDR 32
-#define PORT 8888
+
 #define BROADCAST -1
 
 typedef struct {

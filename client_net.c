@@ -1,81 +1,226 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+/*****************************************************************
+�ե�����̾	: client_net.c
+��ǽ		: ���饤����ȤΥͥåȥ������
+*****************************************************************/
+
+#include"common.h"
+#include"client_func.h"
+#include<sys/socket.h>
+#include<netdb.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/select.h> 
-#include <sys/types.h>   // socket(), accept() など
-#include <sys/socket.h>  // socket(), bind(), listen(), accept() など
-#include <netinet/in.h>  // sockaddr_in
 
-#include "constants.h"
+#define	BUF_SIZE	100
 
-int main(int argc, char *argv[]) {
-    int sock;
-    struct sockaddr_in server_addr;
-    CLIENT clients[MAX_NUM_CLIENTS];
-    int num_clients;
-    CLIENT me;
+static int	gSocket;	/* �����å� */
+static fd_set	gMask;	/* select()�ѤΥޥ��� */
+static int	gWidth;		/* gMask��ΤΥ����å����٤��ӥåȿ� */
 
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <server_ip> <name>\n", argv[0]);
-        exit(1);
+static void GetAllName(int *clientID,int *num,char clientNames[][MAX_NAME_SIZE]);
+static void SetMask(void);
+int RecvData(void *data,int dataSize);
+
+/*****************************************************************
+�ؿ�̾	: SetUpClient
+��ǽ	: �����С��ȤΥ��ͥ���������Ω����
+		  �桼������̾������������Ԥ�
+����	: char	*hostName		: �ۥ���
+		  int	*num			: �����饤����ȿ�
+		  char	clientNames[][]		: �����饤����ȤΥ桼����̾
+����	: ���ͥ������˼��Ԥ�����-1,����������0
+*****************************************************************/
+int SetUpClient(char *hostName,int *clientID,int *num,char clientNames[][MAX_NAME_SIZE])
+{
+    struct hostent	*servHost;
+    struct sockaddr_in	server;
+    int			len;
+    char		str[BUF_SIZE];
+
+    /* �ۥ���̾����ۥ��Ⱦ�������� */
+    if((servHost = gethostbyname(hostName))==NULL){
+		fprintf(stderr,"Unknown host\n");
+		return -1;
     }
 
-    const char *server_ip = argv[1];
-    const char *name = argv[2];
+    bzero((char*)&server,sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    bcopy(servHost->h_addr,(char*)&server.sin_addr,servHost->h_length);
 
-    // ソケット作成
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket()");
-        exit(1);
+    /* �����åȤ�������� */
+    if((gSocket = socket(AF_INET,SOCK_STREAM,0)) < 0){
+		fprintf(stderr,"socket allocation failed\n");
+		return -1;
     }
 
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
-    inet_pton(AF_INET, server_ip, &server_addr.sin_addr);
-
-    // サーバー接続
-    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("connect()");
-        exit(1);
+    /* �����С�����³���� */
+    if(connect(gSocket,(struct sockaddr*)&server,sizeof(server)) == -1){
+		fprintf(stderr,"cannot connect\n");
+		close(gSocket);
+		return -1;
     }
+    fprintf(stderr,"connected\n");
 
-    // 名前を送信
-    write(sock, name, MAX_LEN_NAME);
+    /* ̾�����ɤ߹��ߥ����С������� */
+    do{
+		printf("Enter Your Name\n");
+		fgets(str,BUF_SIZE,stdin);
+		len = strlen(str)-1;
+		str[len]='\0';
+    }while(len>MAX_NAME_SIZE-1 || len==0);
+    SendData(str,MAX_NAME_SIZE);
 
-    printf("Connected to server as '%s'\n", name);
+    printf("Please Wait\n");
 
-    // 全員の情報を受信
-    read(sock, &num_clients, sizeof(int));
-    for (int i = 0; i < num_clients; i++) {
-        read(sock, &clients[i], sizeof(CLIENT));
-    }
+    /* �����饤����ȤΥ桼����̾������ */
+    GetAllName(clientID,num,clientNames);
 
-    // 自分の情報を表示
-    for (int i = 0; i < num_clients; i++) {
-        printf("Client[%d]: name=%s, sock=%d, port=%d\n",
-               clients[i].cid,
-               clients[i].name,
-               clients[i].sock,
-               ntohs(clients[i].addr.sin_port));
-    }
-
-    printf("All clients received.\n");
-
-    /*KEY_EVENT event;
-event.cid = 1;  // 自分のID
-event.key = 'A';      // テスト用に固定文字
-
-write(sock, &event, sizeof(KEY_EVENT));
-
-// サーバーからの返送（全員に通知）を受け取る
-KEY_EVENT recv_event;
-read(sock, &recv_event, sizeof(KEY_EVENT));
-printf("Client[%d] received: client[%d] key=%c\n", 1, recv_event.cid, recv_event.key);*/
-
-
-      close(sock);
+    /* select()�Τ���Υޥ����ͤ����ꤹ�� */
+    SetMask();
+    
     return 0;
+}
+
+/*****************************************************************
+�ؿ�̾	: SendRecvManager
+��ǽ	: �����С����������Ƥ����ǡ������������
+����	: �ʤ�
+����	: �ץ�����ཪλ���ޥ�ɤ������Ƥ�����0���֤���
+		  ����ʳ���1���֤�
+*****************************************************************/
+int SendRecvManager(void)
+{
+    fd_set	readOK;
+    char	player_position[MAX_CLIENTS];
+    int		i;
+    int		endFlag = 1;
+    struct timeval	timeout;
+    GameInfo Info; 
+
+    /* select()���Ԥ����֤����ꤹ�� */
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 20;
+
+    readOK = gMask;
+    /* �����С�����ǡ������Ϥ��Ƥ��뤫Ĵ�٤� */
+    select(gWidth,&readOK,NULL,NULL,&timeout);
+    if(FD_ISSET(gSocket,&readOK)){
+		/* �����С�����ǡ������Ϥ��Ƥ��� */
+    	/* ���ޥ�ɤ��ɤ߹��� */
+		RecvData(&Info, sizeof(GameInfo));
+    RecvInfo(&Info);
+    	/* ���ޥ�ɤ��Ф��������Ԥ� */
+		//endFlag = ExecuteCommand(command);
+    }//END_COMMAND��ä���EndFlag��Ω�ä�server_main.c�Υ��٥�ȥ롼�פ���λ���롣
+    return endFlag;
+}
+
+/*****************************************************************
+�ؿ�̾	: RecvIntData
+��ǽ	: �����С�����int���Υǡ�����������
+����	: int		*intData	: ���������ǡ���
+����	: ������ä��Х��ȿ�
+*****************************************************************/
+int RecvIntData(int *intData)
+{
+    int n,tmp;
+    
+    /* �����������å� */
+    assert(intData!=NULL);
+
+    n = RecvData(&tmp,sizeof(int));
+    (*intData) = ntohl(tmp);
+    
+    return n;
+}
+
+/*****************************************************************
+�ؿ�̾	: SendData
+��ǽ	: �����С��˥ǡ���������
+����	: void		*data		: ����ǡ���
+		  int		dataSize	: ����ǡ����Υ�����
+����	: �ʤ�
+*****************************************************************/
+void SendData(void *data,int dataSize)
+{
+    /* �����������å� */
+    assert(data != NULL);
+    assert(0 < dataSize);
+
+    write(gSocket,data,dataSize);
+}
+
+/*****************************************************************
+�ؿ�̾	: CloseSoc
+��ǽ	: �����С��ȤΥ��ͥ����������Ǥ���
+����	: �ʤ�
+����	: �ʤ�
+*****************************************************************/
+void CloseSoc(void)
+{
+    printf("...Connection closed\n");
+    close(gSocket);
+}
+
+/*****
+static
+*****/
+/*****************************************************************
+�ؿ�̾	: GetAllName
+��ǽ	: �����С����������饤����ȤΥ桼����̾���������
+����	: int		*num			: ���饤����ȿ�
+		  char		clientNames[][]	: �����饤����ȤΥ桼����̾
+����	: �ʤ�
+*****************************************************************/
+static void GetAllName(int *clientID,int *num,char clientNames[][MAX_NAME_SIZE])
+{
+    int	i;
+
+    /* ���饤������ֹ���ɤ߹��� */
+    RecvIntData(clientID);
+    /* ���饤����ȿ����ɤ߹��� */
+    RecvIntData(num);
+
+    /* �����饤����ȤΥ桼����̾���ɤ߹��� */
+    for(i=0;i<(*num);i++){
+		RecvData(clientNames[i],MAX_NAME_SIZE);
+    }
+#ifndef NDEBUG
+    printf("#####\n");
+    printf("client number = %d\n",(*num));
+    for(i=0;i<(*num);i++){
+		printf("%d:%s\n",i,clientNames[i]);
+    }
+#endif
+}
+
+/*****************************************************************
+�ؿ�̾	: SetMask
+��ǽ	: select()�Τ���Υޥ����ͤ����ꤹ��
+����	: �ʤ�
+����	: �ʤ�
+*****************************************************************/
+static void SetMask(void)
+{
+    int	i;
+
+    FD_ZERO(&gMask);
+    FD_SET(gSocket,&gMask);
+
+    gWidth = gSocket+1;
+}
+
+/*****************************************************************
+�ؿ�̾	: RecvData
+��ǽ	: �����С�����ǡ�����������
+����	: void		*data		: ���������ǡ���
+		  int		dataSize	: ��������ǡ����Υ�����
+����	: ������ä��Х��ȿ�
+*****************************************************************/
+int RecvData(void *data,int dataSize)
+{
+    /* �����������å� */
+    assert(data != NULL);
+    assert(0 < dataSize);
+
+    return read(gSocket,data,dataSize);
 }

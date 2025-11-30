@@ -16,18 +16,21 @@ extern void SendData(void *data,int dataSize);
 extern int SendRecvManager(void);
 
 /* client_win.c */
-extern int InitWindows(int clientID,int num,char name[][MAX_NAME_SIZE]);
+extern int InitWindow(int clientID,int num,char name[][MAX_NAME_SIZE]);
 extern void DestroyWindow(void);
 extern void WindowEvent(int num);
-extern void DrawRectangle(int x,int y,int width,int height);
-extern void DrawCircle(int x,int y,int r);
-extern void DrawDiamond(int x,int y,int height);
+extern void RenderWindow(void);
+
 
 /* client_command.c */
+void SendClientCommand(int client_id);
+Direction GetJoyConStick(int clientID);
+FloatPoint DirToVector(Direction d);
+
 extern int ExecuteCommand(char command);
-extern void SendRectangleCommand(void);
-extern void SendCircleCommand(int pos);
 extern void SendEndCommand(void);
 extern void Sendinfo(int pos);
+int RecvData(void *data,int dataSize);
+void RecvInfo(GameInfo *info);
 
 #endif

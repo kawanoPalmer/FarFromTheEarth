@@ -1,0 +1,76 @@
+Reading symbols from ./client...
+(No debugging symbols found in ./client)
+Quit
+Quit
+Undefined command: "".  Try "help".
+Reading symbols from ./server...
+(No debugging symbols found in ./server)
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/server 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 11190) exited with code 0377]
+Quit
+Reading symbols from ./server...
+(No debugging symbols found in ./server)
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/server 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 11201) exited with code 0377]
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/server 4
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[New Thread 0x7ffff6df6700 (LWP 11206)]
+Reading symbols from ./client...
+(No debugging symbols found in ./client)
+Reading symbols from ./client...
+(No debugging symbols found in ./client)
+Reading symbols from ./client...
+(No debugging symbols found in ./client)
+Reading symbols from ./client...
+(No debugging symbols found in ./client)
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/client 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/client 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/client 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Starting program: /home/vmware/後期ゲーム開発/FarFromTheEarth/client 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 11223) exited with code 0377]
+
+Thread 1 "server" received signal SIGABRT, Aborted.
+__GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50
+50	../sysdeps/unix/sysv/linux/raise.c: そのようなファイルやディレクトリはありません.
+[Inferior 1 (process 11219) exited with code 0377]
+[Inferior 1 (process 11227) exited with code 0377]
+[Inferior 1 (process 11231) exited with code 0377]
+#0  __GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50
+#1  0x00007ffff7c75859 in __GI_abort () at abort.c:79
+#2  0x00007ffff7ce03ee in __libc_message (action=action@entry=do_abort, 
+    fmt=fmt@entry=0x7ffff7e0a07c "*** %s ***: terminated\n")
+    at ../sysdeps/posix/libc_fatal.c:155
+#3  0x00007ffff7d82b4a in __GI___fortify_fail (
+    msg=msg@entry=0x7ffff7e0a064 "stack smashing detected") at fortify_fail.c:26
+#4  0x00007ffff7d82b16 in __stack_chk_fail () at stack_chk_fail.c:24
+#5  0x00005555555560a6 in BroadcastGameInfo ()
+#6  0x0000000000000000 in ?? ()
+#6  0x0000000000000000 in ?? ()
+Undefined command: "frame5".  Try "help".
+#5  0x00005555555560a6 in BroadcastGameInfo ()
+45	in ../sysdeps/unix/sysv/linux/raise.c
+No symbol table info available.
+No symbol table info available.
+No symbol "変数名" in current context.
+quit
+quit
+Quit
+quit
+quit
+quit
+Reading symbols from ./client...
+(No debugging symbols found in ./client)
+quit

@@ -1,23 +1,30 @@
 #include "common.h"
+#include"client_func.h"
+#include <arpa/inet.h>
+#include <joyconlib.h>
 
-extern joyconlib_t jc;
-extern int g_client_id;
+extern joyconlib_t jc[2];
 
 /*JoyCon入力し、Directionから正規化
 サーバへ送信*/
-void SendClientCommand(void)
+
+static void SetIntData2DataBlock(void *data,int intData,int *dataSize);
+static void SetCharData2DataBlock(void *data,char charData,int *dataSize);
+static void PackClientCommand(const ClientCommand *cmd, unsigned char *buf, int *size);
+
+void SendClientCommand(int client_id)
 {
     unsigned char data[MAX_DATA];
     int dataSize = 0;
 
     // JoyConのスティック入力
-    Direction d = GetJoyConStick();
+    Direction d = GetJoyConStick(client_id);
     // 正規化された方向ベクトル
     FloatPoint vec = DirToVector(d);
 
     // サーバに送るクライアント入力情報の作成
     ClientCommand cmd;
-    cmd.client_id = g_client_id; // クライアントのID
+    cmd.client_id = client_id; // クライアントのID
     cmd.dir       = vec;         // 移動方向ベクトル
     cmd.velocity  = 1.0f;        // 速度固定
 
@@ -37,15 +44,15 @@ void SendClientCommand(void)
    up/down/left/right の4方向を bool で保持した構造体
   DEADZONE 未満の場合は無視して 0 とする
 */
-Direction GetJoyConStick(void)
+Direction GetJoyConStick(int clientID)
 {
     // 全ての方向をfalseで初期化
     Direction dir = {SDL_FALSE, SDL_FALSE, SDL_FALSE, SDL_FALSE}; 
     // JoyConの状態更新
-    joycon_get_state(&jc);
+    joycon_get_state(&jc[clientID]);
 
-    float x = jc.stick.x; //左右入力
-    float y = jc.stick.y; //上下入力
+    float x = jc[clientID].stick.x; //左右入力
+    float y = jc[clientID].stick.y; //上下入力
     const float DEADZONE = 0.3f;
 
     // 左右判定

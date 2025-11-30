@@ -1,8 +1,10 @@
 #include"server_common.h"
 #include"server_func.h"
+#include <arpa/inet.h>
 
 /*サーバが管理するゲーム全体情報(プレイヤ位置など)*/
 GameInfo game_info;
+ClientCommand clientsCommand[MAX_CLIENTS];
 
 /*クライアントからのコマンド受信
   引数
@@ -80,11 +82,8 @@ void BroadcastGameInfo(void)
 
     // そのままメモリコピで送る
     memcpy(buf, &game_info, size);
-
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        // クライアントが接続中であれば送信
-        // ここはUDPやTCPの実装に応じて送信関数を使い分け
-    }
+    
+    SendData(ALL_CLIENTS, &buf, size);
 }
 
 /*クライアントからの受信データを処理
@@ -105,8 +104,6 @@ void ProcessClientData(const unsigned char *data, int dataSize)
             game_info.chinf[cmd.client_id].point.x,
             game_info.chinf[cmd.client_id].point.y);
         #endif
-        // 変更されたゲーム状態を全員に送信
-        BroadcastGameInfo();
     }
 }
 
@@ -117,7 +114,9 @@ void InitGameInfo(void)
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
         game_info.chinf[i].type = CT_Player;
-        game_info.chinf[i].point.x = 400;
-        game_info.chinf[i].point.y = 300;
+        game_info.chinf[i].point.x = 50*i;
+        game_info.chinf[i].point.y = 100;
+        game_info.chinf[i].w       = 20;
+        game_info.chinf[i].h       = 30;
     }
 }
