@@ -55,13 +55,15 @@ Direction GetJoyConStick(int clientID)
     float y = jc.stick.y; //上下入力
     const float DEADZONE = 0.3f;
 
+    float s_x = y;
+    float s_y = x;
     // 左右判定
-    if (x > DEADZONE) dir.right = SDL_TRUE;
-    if (x < -DEADZONE) dir.left = SDL_TRUE;
+    if (s_x < -DEADZONE) dir.right = SDL_TRUE;
+    if (s_x > DEADZONE) dir.left = SDL_TRUE;
 
     //上下判定
-    if (y > DEADZONE) dir.down = SDL_TRUE;
-    if (y < -DEADZONE) dir.up = SDL_TRUE;    
+    if (s_y > DEADZONE) dir.down = SDL_TRUE;
+    if (s_y < -DEADZONE) dir.up = SDL_TRUE;    
 
     return dir;
 }
