@@ -114,7 +114,7 @@ void InitGameInfo(void)
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
         game_info.chinf[i].type = CT_Player;
-        game_info.chinf[i].point.x = 50*i;
+        game_info.chinf[i].point.x = 50*i + 30;
         game_info.chinf[i].point.y = 100;
         game_info.chinf[i].w       = 20;
         game_info.chinf[i].h       = 30;

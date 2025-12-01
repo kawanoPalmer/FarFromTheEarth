@@ -117,7 +117,7 @@ int SendRecvManager(void)
 		    }
     }
     }
-    BroadcastGameInfo();
+    //BroadcastGameInfo();
     return endFlag;
 }
 

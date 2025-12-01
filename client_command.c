@@ -3,7 +3,7 @@
 #include <arpa/inet.h>
 #include <joyconlib.h>
 
-extern joyconlib_t jc[2];
+extern joyconlib_t jc[MAX_CLIENTS];
 
 /*JoyCon入力し、Directionから正規化
 サーバへ送信*/

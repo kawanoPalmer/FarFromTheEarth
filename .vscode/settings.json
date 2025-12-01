@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "sdl_ttf.h": "c",
-        "constants.h": "c"
+        "constants.h": "c",
+        "common.h": "c"
     }
 }

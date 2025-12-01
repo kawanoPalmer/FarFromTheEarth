@@ -3,7 +3,7 @@
 
 #include "constants.h"
 
-joyconlib_t jc[2];
+joyconlib_t jc[MAX_CLIENTS];
 
 int main(int argc,char *argv[])
 {
@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
 	}
 
     /*ジョイコンオープン*/
-    for(int i= 0; i<2; i++){
+    for(int i= 0; i<num; i++){
   joycon_err err = joycon_open(&jc[i], JOYCON_R);
   if (JOYCON_ERR_NONE != err) {
       printf("joycon open failed:%d\n", err);

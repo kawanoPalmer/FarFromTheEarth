@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
 	InitGameInfo();
 	
 	/* �����߽����Υ��å� */
-	SDL_AddTimer(5000,SignalHandler,NULL);
+	SDL_AddTimer(16,SignalHandler,NULL);
 	
 	/* �ᥤ�󥤥٥�ȥ롼�� */
 	while(endFlag){
@@ -61,6 +61,6 @@ int main(int argc,char *argv[])
 static Uint32 SignalHandler(Uint32 interval, void *param)
 {
 	//SendDiamondCommand();
-
+	BroadcastGameInfo();
 	return interval;
 }

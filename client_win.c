@@ -46,7 +46,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 	font = TTF_OpenFont("DotGothic16/DotGothic16-Regular.ttf", 24);
 
     /** ?????????(????)????????? **/
-    if((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 300, 0)) == NULL) {
+    if((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0)) == NULL) {
 		printf("failed to initialize videomode.\n");
 		return -1;
 	}
