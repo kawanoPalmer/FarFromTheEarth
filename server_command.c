@@ -5,6 +5,60 @@
 /*サーバが管理するゲーム全体情報(プレイヤ位置など)*/
 GameInfo game_info;
 ClientCommand clientsCommand[MAX_CLIENTS];
+static int action_owner[6];
+
+void ExecuteCommand(ClientCommand *cmd)
+{
+    int id = cmd->client_id;
+    CharaInfo* ship = &game_info.chinf[CT_Ship];
+
+    switch (cmd -> act) {
+        case AT_In:
+        for (int i = 0; i <= 5; i++) {
+            if (action_owner[i] == -1) {
+                action_owner[i] = id;
+                ship->stts = CS_Action;
+
+                printf("Client %d started action %d\n", id, i);
+                break;
+            }
+        }
+        break;
+
+        case AT_Out:
+        for (int i = 0; i <= 5; i++) {
+            if (action_owner[i] == id) {
+                action_owner[i] = -1;
+                ship->stts = CS_Normal;
+
+                printf("Client %d stopped action %d\n", id, i);
+                break;
+            }
+        }
+        break;
+
+        case AT_OpX:
+        printf("OpX %d\n", id);
+        break;
+        case AT_OpY:
+        printf("OpY %d\n", id);
+        break;
+        case AT_AtL:
+        printf("AtL %d\n", id);
+        break;
+        case AT_AtR:
+        printf("AtR %d\n", id);
+        break;
+        case AT_Pet:
+        printf("Pet %d\n", id);
+        break;
+        case AT_Oxg:
+        printf("Oxg %d\n", id);
+        break;
+        default:
+        break;
+    }
+}
 
 /*クライアントからのコマンド受信
   引数
@@ -28,6 +82,12 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     cmd->client_id = ntohl(cid);
     offset += sizeof(cid);
 
+    int32_t act_bits;
+    memcpy(&act_bits, buf + offset, sizeof(act_bits));
+    act_bits = ntohl(act_bits);
+    cmd->act = (ActionType)act_bits;
+    offset += sizeof(act_bits);
+
     uint32_t x_bits;
     memcpy(&x_bits, buf + offset, sizeof(x_bits));
     x_bits = ntohl(x_bits);
@@ -47,7 +107,7 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     offset += sizeof(v_bits);
 
     // act は未使用（コメントアウト中）
-    cmd->act = AT_OpX; 
+   // cmd->act = AT_OpX; 
 
     return 0;
 }
@@ -95,6 +155,8 @@ void ProcessClientData(const unsigned char *data, int dataSize)
 {
     ClientCommand cmd;
     if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
+
+        ExecuteCommand(&cmd);
         // サーバ側のキャラ位置を更新
         UpdateCharaPosition(&cmd);
 

@@ -51,7 +51,9 @@ typedef enum {
     AT_AtL = 2,//攻撃（左）
     AT_AtR = 3,//攻撃（右）
     AT_Pet = 4,//燃料
-    AT_Oxg = 5 //酸素
+    AT_Oxg = 5,//酸素
+    AT_In  = 6,//操作開始
+    AT_Out = 7 //操作終了
 } ActionType;
 
 /* 実数座標 */
