@@ -53,10 +53,10 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 
 	gMainRenderer = SDL_CreateRenderer(gMainWindow, -1, SDL_RENDERER_SOFTWARE);
 
-    player[0] = IMG_LoadTexture(gMainRenderer, "/home/vmware/後期ゲーム開発/FarFromTheEarth/materials_win/player1.png");
-    player[1] = IMG_LoadTexture(gMainRenderer, "/home/vmware/後期ゲーム開発/FarFromTheEarth/materials_win/player2.png");
-    player[2] = IMG_LoadTexture(gMainRenderer, "/home/vmware/後期ゲーム開発/FarFromTheEarth/materials_win/player3.png");
-    player[3] = IMG_LoadTexture(gMainRenderer, "/home/vmware/後期ゲーム開発/FarFromTheEarth/materials_win/player4.png");
+    player[0] = IMG_LoadTexture(gMainRenderer, "materials_win/player1.png");
+    player[1] = IMG_LoadTexture(gMainRenderer, "materials_win/player2.png");
+    player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
+    player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
 
     return 0;
 }
