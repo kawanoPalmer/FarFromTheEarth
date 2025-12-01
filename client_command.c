@@ -3,7 +3,7 @@
 #include <arpa/inet.h>
 #include <joyconlib.h>
 
-extern joyconlib_t jc[MAX_CLIENTS];
+extern joyconlib_t jc;
 
 /*JoyCon入力し、Directionから正規化
 サーバへ送信*/
@@ -49,10 +49,10 @@ Direction GetJoyConStick(int clientID)
     // 全ての方向をfalseで初期化
     Direction dir = {SDL_FALSE, SDL_FALSE, SDL_FALSE, SDL_FALSE}; 
     // JoyConの状態更新
-    joycon_get_state(&jc[clientID]);
+    joycon_get_state(&jc);
 
-    float x = jc[clientID].stick.x; //左右入力
-    float y = jc[clientID].stick.y; //上下入力
+    float x = jc.stick.x; //左右入力
+    float y = jc.stick.y; //上下入力
     const float DEADZONE = 0.3f;
 
     // 左右判定
