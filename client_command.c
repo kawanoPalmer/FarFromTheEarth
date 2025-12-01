@@ -107,10 +107,10 @@ static void PackClientCommand(const ClientCommand *cmd, unsigned char *buf, int 
     int32_t cid = htonl(cmd->client_id);
     memcpy(buf + offset, &cid, sizeof(cid));
     offset += sizeof(cid);
-    /*
+    
     int32_t act = htonl((int32_t)cmd->act);
     memcpy(buf + offset, &act, sizeof(act));
-    offset += sizeof(act);*/
+    offset += sizeof(act);
 
     uint32_t x_bits;
     memcpy(&x_bits, &cmd->dir.x, sizeof(float));
