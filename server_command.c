@@ -28,6 +28,12 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     cmd->client_id = ntohl(cid);
     offset += sizeof(cid);
 
+    int32_t act_bits;
+    memcpy(&act_bits, buf + offset, sizeof(act_bits));
+    act_bits = ntohl(act_bits);
+    cmd->act = (ActionType)act_bits;
+    offset += sizeof(act_bits);
+
     uint32_t x_bits;
     memcpy(&x_bits, buf + offset, sizeof(x_bits));
     x_bits = ntohl(x_bits);
