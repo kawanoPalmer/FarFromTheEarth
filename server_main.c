@@ -14,7 +14,7 @@ int main(int argc,char *argv[])
 	int	endFlag = 1;
 
 	/* �����������å� */
-	if(argc != 2){
+	if(argc != 2 || argc != 3){
 		fprintf(stderr,"Usage: number of clients\n");
 		exit(-1);
 	}
