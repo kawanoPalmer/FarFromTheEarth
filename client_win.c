@@ -7,6 +7,7 @@ static TTF_Font* font;
 static SDL_Window *gMainWindow;
 static SDL_Renderer *gMainRenderer;
 static SDL_Texture *player[4];
+static SDL_Texture *spaceShip;
 static GameInfo game_info;
 
 void RecvInfo(GameInfo *info){
@@ -23,6 +24,17 @@ void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int ci
     dst.y = ch->point.y;
     dst.w = ch->w;
     dst.h = ch->h;
+
+    SDL_RenderCopy(renderer, tex, NULL, &dst);
+}
+
+void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
+{
+    SDL_Rect dst;
+    dst.w = 500;
+    dst.h = 500;
+    dst.x = MAX_WINDOW_X/2-dst.w/2;
+    dst.y = MAX_WINDOW_Y/2-dst.h/2;
 
     SDL_RenderCopy(renderer, tex, NULL, &dst);
 }
@@ -46,7 +58,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 	font = TTF_OpenFont("DotGothic16/DotGothic16-Regular.ttf", 24);
 
     /** ?????????(????)????????? **/
-    if((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0)) == NULL) {
+    if((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, MAX_WINDOW_X, MAX_WINDOW_Y, 0)) == NULL) {
 		printf("failed to initialize videomode.\n");
 		return -1;
 	}
@@ -57,7 +69,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[1] = IMG_LoadTexture(gMainRenderer, "materials_win/player2.png");
     player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
-
+    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto.png"); 
     return 0;
 }
 
@@ -83,6 +95,8 @@ void RenderWindow(void)
 {
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 255, 255);
     SDL_RenderClear(gMainRenderer);
+
+    RenderShip(gMainRenderer, spaceShip);
 
     for(int i=0; i<4; i++){
         RenderChara(gMainRenderer, &game_info.chinf[i], player[i], i);

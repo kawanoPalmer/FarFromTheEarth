@@ -17,6 +17,8 @@
 
 #define MAX_CLIENTS		4				/* クライアント数の最大値 */
 #define MAX_NAME_SIZE	10 				/* ユーザー名の最大値*/
+#define MAX_WINDOW_X 1500
+#define MAX_WINDOW_Y 800
 
 #define MAX_DATA		20000				/* 送受信するデータの最大値 */
 
