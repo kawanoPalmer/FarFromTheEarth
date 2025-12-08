@@ -25,6 +25,7 @@ extern void RenderWindow(void);
 /* client_command.c */
 void SendClientCommand(int client_id);
 Direction GetJoyConStick(int clientID);
+int GetJoyConButton(int clientID);
 FloatPoint DirToVector(Direction d);
 
 extern int ExecuteCommand(char command);

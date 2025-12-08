@@ -22,9 +22,12 @@ void SendClientCommand(int client_id)
     // 正規化された方向ベクトル
     FloatPoint vec = DirToVector(d);
 
+    int act = GetJoyConButton(client_id);
+
     // サーバに送るクライアント入力情報の作成
     ClientCommand cmd;
     cmd.client_id = client_id; // クライアントのID
+    cmd.act       = act;
     cmd.dir       = vec;         // 移動方向ベクトル
     cmd.velocity  = 1.0f;        // 速度固定
 
@@ -66,6 +69,15 @@ Direction GetJoyConStick(int clientID)
     if (s_y < -DEADZONE) dir.up = SDL_TRUE;    
 
     return dir;
+}
+
+int GetJoyConButton(int clientID)
+{
+    joycon_get_state(&jc);
+    if(jc.button.btn.X /*&& 今までのact == 1 && 座標*/) return 'X';
+    //Xボタン押したことだけ送って座標とかON/OFFはサーバー側でやってもいいかも
+    //返り値とかも変更してもいいかも
+    //if(jc.button.btn.X /*&& 今までのact == 2 && 座標*/) return 1;
 }
 
 /*Direction → 方向ベクトルに変換
