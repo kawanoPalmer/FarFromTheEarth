@@ -74,7 +74,12 @@ Direction GetJoyConStick(int clientID)
 int GetJoyConButton(int clientID)
 {
     joycon_get_state(&jc);
-    if(jc.button.btn.X /*&& 今までのact == 1 && 座標*/) return 'X';
+    if(jc.button.btn.X /*&& 今までのact == 1 && 座標*/) {
+        return 'X';
+    }
+    else{
+        return -1;
+    }
     //Xボタン押したことだけ送って座標とかON/OFFはサーバー側でやってもいいかも
     //返り値とかも変更してもいいかも
     //if(jc.button.btn.X /*&& 今までのact == 2 && 座標*/) return 1;
