@@ -71,24 +71,29 @@ Direction GetJoyConStick(int clientID)
     return dir;
 }
 
+static ButtonState previous_state = {0, 0, 0};
+
 int GetJoyConButton(int clientID)
 {
-    static int prevX = 0;   // 前フレームの X ボタン状態
-    static int toggleX = 0; // トグル状態（0 or 1）
+    int pressed_button = '\0';
 
-    int nowX = jc.button.btn.X ? 1 : 0;
+    int current_X = jc.button.btn.X; 
+    int current_A = jc.button.btn.A; 
+    int current_B = jc.button.btn.B; 
 
-    // 押した瞬間（立ち上がり）だけ検出
-    if (nowX && !prevX) {
-        // トグル切り替え
-        toggleX = !toggleX;
-
-        prevX = nowX;
-        return toggleX ? 'X' : 0;  
+    if (current_X && !previous_state.X){
+        pressed_button = 'X';
+    }else if (current_A && !previous_state.A){
+        pressed_button = 'A';
+    }else if (current_B && !previous_state.B){
+        pressed_button = 'B';
     }
 
-    prevX = nowX;
-    return -1;
+    previous_state.X = current_X;
+    previous_state.A = current_A;
+    previous_state.B = current_B;
+
+    return pressed_button;
 }
 
 

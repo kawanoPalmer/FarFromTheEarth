@@ -104,5 +104,11 @@ typedef struct {
     float velocity;     // 速度（移動や操作の強さ）
 } ClientCommand;
 
+typedef struct{
+    int X;
+    int A;
+    int B;
+}ButtonState;
+
 
 #endif

@@ -12,6 +12,10 @@ void ExecuteCommand(ClientCommand *cmd)
     int id = cmd->client_id;
     CharaInfo* ship = &game_info.chinf[CT_Ship];
 
+if(cmd->act != '\0'){
+    fprintf(stderr, "%d,%c", cmd->client_id, cmd->act);
+}
+
     switch (cmd -> act) {
         case AT_In:
         for (int i = 0; i <= 5; i++) {
