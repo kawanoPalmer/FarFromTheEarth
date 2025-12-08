@@ -69,7 +69,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[1] = IMG_LoadTexture(gMainRenderer, "materials_win/player2.png");
     player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
-    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto.png"); 
+    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png"); 
     return 0;
 }
 
