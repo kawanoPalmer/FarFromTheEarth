@@ -5,59 +5,15 @@
 /*サーバが管理するゲーム全体情報(プレイヤ位置など)*/
 GameInfo game_info;
 ClientCommand clientsCommand[MAX_CLIENTS];
-static int action_owner[6];
 
 void ExecuteCommand(ClientCommand *cmd)
 {
-    int id = cmd->client_id;
-    CharaInfo* ship = &game_info.chinf[CT_Ship];
-
-    switch (cmd -> act) {
-        case AT_In:
-        for (int i = 0; i <= 5; i++) {
-            if (action_owner[i] == -1) {
-                action_owner[i] = id;
-                ship->stts = CS_Action;
-
-                printf("Client %d started action %d\n", id, i);
-                break;
-            }
-        }
-        break;
-
-        case AT_Out:
-        for (int i = 0; i <= 5; i++) {
-            if (action_owner[i] == id) {
-                action_owner[i] = -1;
-                ship->stts = CS_Normal;
-
-                printf("Client %d stopped action %d\n", id, i);
-                break;
-            }
-        }
-        break;
-
-        case AT_OpX:
-        printf("OpX %d\n", id);
-        break;
-        case AT_OpY:
-        printf("OpY %d\n", id);
-        break;
-        case AT_AtL:
-        printf("AtL %d\n", id);
-        break;
-        case AT_AtR:
-        printf("AtR %d\n", id);
-        break;
-        case AT_Pet:
-        printf("Pet %d\n", id);
-        break;
-        case AT_Oxg:
-        printf("Oxg %d\n", id);
-        break;
-        default:
-        break;
-    }
+    if(game_info.chinf[cmd->client_id].stts == CS_Normal)   
+        fprintf(stderr, "Interact OFF!\n");
+    else if(game_info.chinf[cmd->client_id].stts == CS_Action)
+        fprintf(stderr, "Interact ON!\n");
+    else
+        fprintf(stderr, "wrong\n");
 }
 
 /*クライアントからのコマンド受信
@@ -146,6 +102,21 @@ void BroadcastGameInfo(void)
     SendData(ALL_CLIENTS, &buf, size);
 }
 
+void InteractManeger(const ClientCommand *cmd)
+{
+    switch (cmd->act)
+    {
+    case 'X':
+        game_info.chinf[cmd->client_id].stts = CS_Action;
+        break;
+    case 'A':
+    game_info.chinf[cmd->client_id].stts = CS_Normal;
+    break;
+    default:
+        break;
+    }
+}
+
 /*クライアントからの受信データを処理
   引数
     data     : クライアントから受信したバイト配列
@@ -156,9 +127,12 @@ void ProcessClientData(const unsigned char *data, int dataSize)
     ClientCommand cmd;
     if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
 
-        ExecuteCommand(&cmd);
+            InteractManeger(&cmd);
+        if (game_info.chinf[cmd.client_id].stts == CS_Action)
+            ExecuteCommand(&cmd);
         // サーバ側のキャラ位置を更新
-        UpdateCharaPosition(&cmd);
+        if (game_info.chinf[cmd.client_id].stts == CS_Normal)
+            UpdateCharaPosition(&cmd);
 
         #ifndef NDEBUG
         printf("Server: client %d moved to (%.2f, %.2f)\n",
@@ -175,6 +149,7 @@ void InitGameInfo(void)
     memset(&game_info, 0, sizeof(GameInfo));
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
+        game_info.chinf[i].stts = CS_Normal;
         game_info.chinf[i].type = CT_Player;
         game_info.chinf[i].point.x = 50*i + 30;
         game_info.chinf[i].point.y = 100;
