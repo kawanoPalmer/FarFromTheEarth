@@ -95,7 +95,7 @@ typedef struct {
 //クライアントが変更したものをサーバーに送る
 typedef struct {
     int32_t client_id;  // クライアントを識別（サーバーが誰の入力か判定）
-    ActionType act;     // 現在の行動（操縦・攻撃・酸素補給など）
+    int act;           // 入力ボタン
     FloatPoint dir;     // 入力方向（スティック方向）
     float velocity;     // 速度（移動や操作の強さ）
 } ClientCommand;

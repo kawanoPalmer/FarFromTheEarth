@@ -31,7 +31,7 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     int32_t act_bits;
     memcpy(&act_bits, buf + offset, sizeof(act_bits));
     act_bits = ntohl(act_bits);
-    cmd->act = (ActionType)act_bits;
+    //cmd->act = (ActionType)act_bits;
     offset += sizeof(act_bits);
 
     uint32_t x_bits;
@@ -53,7 +53,7 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     offset += sizeof(v_bits);
 
     // act は未使用（コメントアウト中）
-    cmd->act = AT_OpX; 
+    //cmd->act = AT_OpX; 
 
     return 0;
 }
