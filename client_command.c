@@ -73,17 +73,24 @@ Direction GetJoyConStick(int clientID)
 
 int GetJoyConButton(int clientID)
 {
-    joycon_get_state(&jc);
-    if(jc.button.btn.X /*&& 今までのact == 1 && 座標*/) {
-        return 'X';
+    static int prevX = 0;   // 前フレームの X ボタン状態
+    static int toggleX = 0; // トグル状態（0 or 1）
+
+    int nowX = jc.button.btn.X ? 1 : 0;
+
+    // 押した瞬間（立ち上がり）だけ検出
+    if (nowX && !prevX) {
+        // トグル切り替え
+        toggleX = !toggleX;
+
+        prevX = nowX;
+        return toggleX ? 'X' : 0;  
     }
-    else{
-        return -1;
-    }
-    //Xボタン押したことだけ送って座標とかON/OFFはサーバー側でやってもいいかも
-    //返り値とかも変更してもいいかも
-    //if(jc.button.btn.X /*&& 今までのact == 2 && 座標*/) return 1;
+
+    prevX = nowX;
+    return -1;
 }
+
 
 /*Direction → 方向ベクトルに変換
   返り値：FloatPoint
