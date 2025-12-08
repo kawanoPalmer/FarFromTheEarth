@@ -73,11 +73,11 @@ void UpdateCharaPosition(const ClientCommand *cmd)
     ch->point.x += cmd->dir.x * cmd->velocity;
     ch->point.y += cmd->dir.y * cmd->velocity;
 
-    // 画面端チェック（仮に0~800, 0~600の範囲）
+    // 画面端チェック
     if (ch->point.x < 0.0f) ch->point.x = 0.0f;
-    if (ch->point.x > 800.0f) ch->point.x = 800.0f;
+    if (ch->point.x > MAX_WINDOW_X) ch->point.x = MAX_WINDOW_X;
     if (ch->point.y < 0.0f) ch->point.y = 0.0f;
-    if (ch->point.y > 600.0f) ch->point.y = 600.0f;
+    if (ch->point.y > MAX_WINDOW_Y) ch->point.y = MAX_WINDOW_Y;
 }
 
 /*ゲーム情報を全クライアントに送信*/
