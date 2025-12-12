@@ -10,7 +10,7 @@ CFLAGS	=	-c -DNDEBUG
 all: $(TARGET1) $(TARGET2)
 
 $(TARGET1):	$(OBJS1)
-	gcc -o $(TARGET1) $(OBJS1) -lm -lSDL2
+	gcc -o $(TARGET1) $(OBJS1) -lm -lSDL2 -lSDL2_image
 $(TARGET2):	$(OBJS2)
 	gcc -o $(TARGET2) $(OBJS2) -lm -lSDL2 -lSDL2_image -lSDL2_gfx -lSDL2_ttf -ljoyconlib -lhidapi-hidraw$(LDFLAGS)
 

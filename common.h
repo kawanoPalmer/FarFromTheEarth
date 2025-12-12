@@ -25,6 +25,21 @@
 #define CHARATYPE_MAXNUM 4 // キャラタイプ総数
 #define CHARA_NUM 7 //クライアント(4) + ゴール(1) + 敵(1) + 宇宙船(1)
 
+#define SPACESHIP_SIZE 500
+
+typedef enum {
+    IT_MoveL = 0,
+    IT_MoveR = 1,
+    IT_AttackUpper = 2,
+    IT_AttackLower = 3,
+    IT_TaskOxy = 4
+} InteractType;
+
+typedef enum {
+    FT_Passable = 5,
+    FT_Unpassible = 6
+} FloorType;
+
 //キャラクターの種類（列挙体）
 typedef enum {
     CT_Player  = 0, // プレイヤー

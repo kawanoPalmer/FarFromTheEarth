@@ -2,18 +2,77 @@
 #include"server_func.h"
 #include <arpa/inet.h>
 
+
 /*サーバが管理するゲーム全体情報(プレイヤ位置など)*/
 GameInfo game_info;
 ClientCommand clientsCommand[MAX_CLIENTS];
 
-void ExecuteCommand(ClientCommand *cmd)
+SDL_Surface* mask;
+
+int ColorDecision(SDL_Surface *surface, int x, int y){
+    Uint8 r, g, b;
+
+    if (!surface) return 0;
+
+    //x,yを画像を描画する位置のぶんだけズラす。
+    x -= MAX_WINDOW_X/2-SPACESHIP_SIZE/2;
+    y -= MAX_WINDOW_Y/2-SPACESHIP_SIZE/2;
+    int bpp = surface->format->BytesPerPixel;
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+    Uint32 pixel = 0;
+
+    switch (bpp) {
+        case 1:
+            pixel = *p;
+            break;
+        case 2:
+            pixel = *(Uint16 *)p;
+            break;
+        case 3:
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+                pixel = p[0] << 16 | p[1] << 8 | p[2];
+            else
+                pixel = p[0] | p[1] << 8 | p[2] << 16;
+            break;
+        case 4:
+            pixel = *(Uint32 *)p;
+            break;
+    }
+
+    SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+    //fprintf(stderr, "r=%d, g=%d, b=%d\n", r, g, b);
+
+    //以上で座標上のRGBを取得、以下で色によって分岐する。
+    if (r == 255 && g == 0 && b == 0) {
+        // 赤
+        return  IT_MoveR;
+    } else if (r == 85 && g == 255 && b == 0) {
+        // 緑
+        return IT_AttackUpper;
+    } else if (r == 0 && g == 85 && b == 255) {
+        // 青
+        return IT_MoveL;
+    } else if (r == 255 && g == 255 && b == 0) {
+        // 黄
+        return IT_AttackLower;
+    } else if (r == 170 && g == 0 && b == 255) {
+        // 紫
+        return IT_TaskOxy;
+    } else if (r == 255 && g == 255 && b == 255) {
+        // 白
+        return FT_Passable;
+    } else if (r == 0 && g == 0 && b == 0) {
+        // 黒
+        return FT_Unpassible;
+    } else 
+        return 999;
+
+}
+
+void ExecuteCommand(CharaInfo *ch)
 {
-    if(game_info.chinf[cmd->client_id].stts == CS_Normal)   
-        fprintf(stderr, "Interact OFF!\n");
-    else if(game_info.chinf[cmd->client_id].stts == CS_Action)
-        fprintf(stderr, "Interact ON!\n");
-    else
-        fprintf(stderr, "wrong\n");
+    int Interaction = ColorDecision(mask, ch->point.x, ch->point.y);
+    fprintf(stderr, "Your Interact: %d\n", Interaction);
 }
 
 /*クライアントからのコマンド受信
@@ -80,8 +139,10 @@ void UpdateCharaPosition(const ClientCommand *cmd)
     CharaInfo *ch = &game_info.chinf[id];
 
     // 移動量計算
+    if(ColorDecision(mask, ch->point.x+cmd->dir.x*cmd->velocity, ch->point.y+cmd->dir.y * cmd->velocity) != FT_Unpassible){
     ch->point.x += cmd->dir.x * cmd->velocity;
     ch->point.y += cmd->dir.y * cmd->velocity;
+    }
 
     // 画面端チェック
     if (ch->point.x < 0.0f) ch->point.x = 0.0f;
@@ -129,10 +190,11 @@ void ProcessClientData(const unsigned char *data, int dataSize)
 
             InteractManeger(&cmd);
         if (game_info.chinf[cmd.client_id].stts == CS_Action)
-            ExecuteCommand(&cmd);
+            ExecuteCommand(&game_info.chinf[cmd.client_id]);
         // サーバ側のキャラ位置を更新
         if (game_info.chinf[cmd.client_id].stts == CS_Normal)
             UpdateCharaPosition(&cmd);
+            
 
         #ifndef NDEBUG
         printf("Server: client %d moved to (%.2f, %.2f)\n",
@@ -151,9 +213,20 @@ void InitGameInfo(void)
     for (int i = 0; i < MAX_CLIENTS; i++) {
         game_info.chinf[i].stts = CS_Normal;
         game_info.chinf[i].type = CT_Player;
-        game_info.chinf[i].point.x = 50*i + 30;
-        game_info.chinf[i].point.y = 100;
+        game_info.chinf[i].point.x = 695;
+        game_info.chinf[i].point.y = 370+2*i;
         game_info.chinf[i].w       = 20;
         game_info.chinf[i].h       = 30;
     }
+
+    SDL_Surface* src = IMG_Load("materials_win/spaceship_proto2_mask.png");
+    mask = SDL_CreateRGBSurface(
+        0, 500, 500,
+        src->format->BitsPerPixel,
+        src->format->Rmask,
+        src->format->Gmask,
+        src->format->Bmask,
+        src->format->Amask
+    );
+    SDL_BlitScaled(src, NULL, mask, NULL);
 }

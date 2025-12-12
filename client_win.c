@@ -2,7 +2,6 @@
 #include <math.h>
 #include "common.h"
 
-static SDL_Rect gButtonRect[MAX_CLIENTS+2];
 static TTF_Font* font;
 static SDL_Window *gMainWindow;
 static SDL_Renderer *gMainRenderer;
@@ -31,8 +30,8 @@ void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int ci
 void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
 {
     SDL_Rect dst;
-    dst.w = 500;
-    dst.h = 500;
+    dst.w = SPACESHIP_SIZE;
+    dst.h = SPACESHIP_SIZE;
     dst.x = MAX_WINDOW_X/2-dst.w/2;
     dst.y = MAX_WINDOW_Y/2-dst.h/2;
 
@@ -56,6 +55,10 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 
 	TTF_Init();
 	font = TTF_OpenFont("DotGothic16/DotGothic16-Regular.ttf", 24);
+
+    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0) {
+        fprintf(stderr, "IMG_Init failed: %s\n", IMG_GetError());
+    }
 
     /** ?????????(????)????????? **/
     if((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, MAX_WINDOW_X, MAX_WINDOW_Y, 0)) == NULL) {
