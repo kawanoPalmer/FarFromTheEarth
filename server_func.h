@@ -7,6 +7,7 @@
 int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd);
 void ProcessClientData(const unsigned char *data, int dataSize);
 void UpdateCharaPosition(const ClientCommand *cmd);
+void UpdateOxygen(void);
 void BroadcastGameInfo(void);
 void ProcessClientData(const unsigned char *data, int dataSize);
 void InitGameInfo(void);

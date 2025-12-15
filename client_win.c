@@ -121,7 +121,10 @@ void RenderWindow(void)
 
     float ship_x = game_info.chinf[4].point.x;
     float ship_y = game_info.chinf[4].point.y;
-
+    /*Uint8 r = (int)fabs(ship_x) % 255;
+    Uint8 g = (int)fabs(ship_y) % 255;
+    SDL_SetRenderDrawColor(gMainRenderer, r, g, 50, 255);
+    SDL_RenderClear(gMainRenderer);*/
     RenderShip(gMainRenderer, spaceShip);
 
     /*for(int i=0; i<4; i++){

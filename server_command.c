@@ -80,7 +80,7 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
     float stick_len = sqrtf(stick_vec.x * stick_vec.x + stick_vec.y * stick_vec.y);
 
     // スティックが傾けられていない場合は処理をスキップ 
-    if (stick_len < 0.1f) return; 
+    //if (stick_len < 0.1f) return; 
 
     // 船の速度 = 基本速度 * クライアントから送られてきた速度（現在は1.0f固定）
     float actual_speed = SHIP_BASE_SPEED * cmd->velocity;
@@ -92,16 +92,32 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
         //IT_MoveR: 左右操作 赤
         case IT_MoveR: 
             // スティックのX軸入力を船のX移動に使う
+            if (stick_len > 0.1f){
             ship->point.x += stick_vec.x * actual_speed;
             fprintf(stderr, "[Ship] Move X: %.1f\n", ship->point.x);
+            }
             break;
             
         //IT_MoveL: 上下操作 青
         case IT_MoveL: 
             // スティックのY軸入力を船のY移動に使う (SDLではYが増加すると下へ移動)
+            if (stick_len > 0.1f) {
             ship->point.y += stick_vec.y * actual_speed;
             fprintf(stderr, "[Ship] Move Y: %.1f\n", ship->point.y);
+            }
             break;
+        
+        case IT_TaskOxy:
+        if (cmd->act == 'B') {
+            game_info.oxy_progress++;
+            if (game_info.oxy_progress >= game_info.oxy_required) {
+                game_info.oxy_progress = game_info.oxy_max;
+                fprintf(stderr, "Oxygen Task Progress: %d\n", game_info.oxy_progress);
+                game_info.oxy_progress = 0;
+                fprintf(stderr, "Oxygen fully replenished!\n");
+            }
+        }
+        break;
             
         case IT_AttackUpper:
         if (cmd->act == 'B' && cooldown == 0) {
@@ -194,6 +210,19 @@ void UpdateCharaPosition(const ClientCommand *cmd)
     if (ch->point.y > MAX_WINDOW_Y) ch->point.y = MAX_WINDOW_Y;
 }
 
+void UpdateOxygen(void)
+{
+    game_info.oxy_amount -= OXY_DEPLETION;
+
+    if (game_info.oxy_amount < 0.0f) {
+        game_info.oxy_amount = 0.0f;
+    }
+    if (game_info.oxy_amount <= 0.0f) {
+        // 0以下ならゲームオーバ
+    }
+
+}
+
 /*ゲーム情報を全クライアントに送信*/
 void BroadcastGameInfo(void)
 {
@@ -261,11 +290,17 @@ void InitGameInfo(void)
         game_info.chinf[i].w       = 20;
         game_info.chinf[i].h       = 30;
     }
-
+    // 宇宙船初期化
     game_info.chinf[ID_SHIP].type = CT_Ship;
     game_info.chinf[ID_SHIP].stts = CS_Normal;
     game_info.chinf[ID_SHIP].point.x = 0.0f; 
     game_info.chinf[ID_SHIP].point.y = 0.0f;
+
+    // 酸素タスク初期化
+    game_info.oxy_max = 100.0f;
+    game_info.oxy_amount = game_info.oxy_max;
+    game_info.oxy_progress = 0;
+    game_info.oxy_required = 50;
 
     SDL_Surface* src = IMG_Load("materials_win/spaceship_proto2_mask.png");
     mask = SDL_CreateRGBSurface(
