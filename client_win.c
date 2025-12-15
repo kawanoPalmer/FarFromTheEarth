@@ -9,6 +9,8 @@ static SDL_Texture *player[4];
 static SDL_Texture *spaceShip;
 static GameInfo game_info;
 
+int DistanceToGoal(float x, float y);
+
 void RecvInfo(GameInfo *info){
     for(int i=0; i<CHARA_NUM; i++){
     game_info.chinf[i] = info->chinf[i];
@@ -49,6 +51,31 @@ void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
     SDL_RenderCopy(renderer, tex, NULL, &dst);
 }
 
+void RenderDistance(SDL_Renderer* renderer, TTF_Font* tex, float x, float y)
+{
+    int distance = DistanceToGoal(x, y);
+    char buf[64];
+    snprintf(buf, sizeof(buf), "次の惑星まで: %dAU", distance);
+
+    // 白色で描画
+    SDL_Color white = {0, 0, 0, 255};
+    SDL_Surface *message = TTF_RenderUTF8_Solid(font, buf, white);
+
+    SDL_Texture *textTex = SDL_CreateTextureFromSurface(renderer, message);
+
+    // 描画位置を上部中央に設定
+    SDL_Rect dst;
+    dst.w = message->w*2;
+    dst.h = message->h*2;
+    dst.x = 10;
+    dst.y = 5;   // 上から少し下げる
+
+    SDL_RenderCopy(renderer, textTex, NULL, &dst);
+
+    SDL_DestroyTexture(textTex);
+    SDL_FreeSurface(message);
+}
+
 /* ???????????????????
  *
  * ??
@@ -65,7 +92,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 	}
 
 	TTF_Init();
-	font = TTF_OpenFont("DotGothic16/DotGothic16-Regular.ttf", 24);
+	font = TTF_OpenFont("DotGothic16-Regular.ttf", 24);
 
     if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0) {
         fprintf(stderr, "IMG_Init failed: %s\n", IMG_GetError());
@@ -162,5 +189,14 @@ void RenderWindow(void)
     /* ??????????????
      *  ????????????1?????????
      */
+    RenderDistance(gMainRenderer, font, ship_x, ship_y);
     SDL_RenderPresent(gMainRenderer);
+}
+
+int DistanceToGoal(float x, float y)
+{ 
+    float d_x = x-GOAL_POSITION_X;
+    float d_y = y-GOAL_POSITION_Y;
+    float dist = sqrtf(d_x * d_x + d_y * d_y);
+    return (int)dist;
 }

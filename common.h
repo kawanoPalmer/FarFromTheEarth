@@ -30,6 +30,9 @@
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 2.0f
 
+#define GOAL_POSITION_X 1000
+#define GOAL_POSITION_Y 1000 
+
 typedef enum {
     IT_MoveL = 0,
     IT_MoveR = 1,
