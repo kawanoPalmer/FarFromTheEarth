@@ -40,7 +40,7 @@ int ColorDecision(SDL_Surface *surface, int x, int y){
     }
 
     SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-    //fprintf(stderr, "r=%d, g=%d, b=%d\n", r, g, b);
+    fprintf(stderr, "r=%d, g=%d, b=%d\n", r, g, b);
 
     //以上で座標上のRGBを取得、以下で色によって分岐する。
     if (r == 255 && g == 0 && b == 0) {
@@ -69,10 +69,53 @@ int ColorDecision(SDL_Surface *surface, int x, int y){
 
 }
 
-void ExecuteCommand(CharaInfo *ch)
+void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
 {
     int Interaction = ColorDecision(mask, ch->point.x, ch->point.y);
     fprintf(stderr, "Your Interact: %d\n", Interaction);
+
+    CharaInfo *ship = &game_info.chinf[ID_SHIP];
+    //クライアントから送られてきたスティックの方向ベクトルを取得
+    FloatPoint stick_vec = cmd->dir;
+    float stick_len = sqrtf(stick_vec.x * stick_vec.x + stick_vec.y * stick_vec.y);
+
+    // スティックが傾けられていない場合は処理をスキップ 
+    if (stick_len < 0.1f) return; 
+
+    // 船の速度 = 基本速度 * クライアントから送られてきた速度（現在は1.0f固定）
+    float actual_speed = SHIP_BASE_SPEED * cmd->velocity;
+
+    static int cooldown = 0;
+    if (cooldown > 0) cooldown--;
+
+    switch (Interaction) {
+        //IT_MoveR: 左右操作 赤
+        case IT_MoveR: 
+            // スティックのX軸入力を船のX移動に使う
+            ship->point.x += stick_vec.x * actual_speed;
+            fprintf(stderr, "[Ship] Move X: %.1f\n", ship->point.x);
+            break;
+            
+        //IT_MoveL: 上下操作 青
+        case IT_MoveL: 
+            // スティックのY軸入力を船のY移動に使う (SDLではYが増加すると下へ移動)
+            ship->point.y += stick_vec.y * actual_speed;
+            fprintf(stderr, "[Ship] Move Y: %.1f\n", ship->point.y);
+            break;
+            
+        case IT_AttackUpper:
+        if (cmd->act == 'B' && cooldown == 0) {
+
+        }   
+             break;
+        case IT_AttackLower:
+        if (cmd->act == 'B' && cooldown == 0) {
+            
+        }
+             
+        default:
+            break;
+    }
 }
 
 /*クライアントからのコマンド受信
@@ -190,7 +233,7 @@ void ProcessClientData(const unsigned char *data, int dataSize)
 
             InteractManeger(&cmd);
         if (game_info.chinf[cmd.client_id].stts == CS_Action)
-            ExecuteCommand(&game_info.chinf[cmd.client_id]);
+            ExecuteCommand(&game_info.chinf[cmd.client_id], &cmd);
         // サーバ側のキャラ位置を更新
         if (game_info.chinf[cmd.client_id].stts == CS_Normal)
             UpdateCharaPosition(&cmd);
@@ -218,6 +261,11 @@ void InitGameInfo(void)
         game_info.chinf[i].w       = 20;
         game_info.chinf[i].h       = 30;
     }
+
+    game_info.chinf[ID_SHIP].type = CT_Ship;
+    game_info.chinf[ID_SHIP].stts = CS_Normal;
+    game_info.chinf[ID_SHIP].point.x = 0.0f; 
+    game_info.chinf[ID_SHIP].point.y = 0.0f;
 
     SDL_Surface* src = IMG_Load("materials_win/spaceship_proto2_mask.png");
     mask = SDL_CreateRGBSurface(

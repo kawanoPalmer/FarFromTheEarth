@@ -10,9 +10,11 @@ static SDL_Texture *spaceShip;
 static GameInfo game_info;
 
 void RecvInfo(GameInfo *info){
-    for(int i=0; i<MAX_CLIENTS; i++){
+    for(int i=0; i<CHARA_NUM; i++){
     game_info.chinf[i] = info->chinf[i];
+    if (i==4){
     fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
+    }
     }
 }
 
@@ -90,6 +92,24 @@ void DestroyWindow(void)
     SDL_Quit();
 }
 
+void RenderRelativeChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, float ship_x, float ship_y)
+{
+    SDL_Rect dst;
+    
+    // 画面中央（船の中心）の座標
+    int center_x = MAX_WINDOW_X / 2;
+    int center_y = MAX_WINDOW_Y / 2;
+
+    // 計算式: (オブジェクトの座標 - 船の座標) + 画面オフセット
+    // 船が右(x+)に進むと、(obj - ship) は小さくなるので、オブジェクトは左に流れる
+    dst.x = (int)(ch->point.x - ship_x) + center_x - ch->w / 2;
+    dst.y = (int)(ch->point.y - ship_y) + center_y - ch->h / 2;
+    dst.w = ch->w;
+    dst.h = ch->h;
+
+    SDL_RenderCopy(renderer, tex, NULL, &dst);
+}
+
 
 /* ???????
  *  ????????????????????
@@ -99,10 +119,35 @@ void RenderWindow(void)
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 255, 255);
     SDL_RenderClear(gMainRenderer);
 
+    float ship_x = game_info.chinf[4].point.x;
+    float ship_y = game_info.chinf[4].point.y;
+
     RenderShip(gMainRenderer, spaceShip);
 
-    for(int i=0; i<4; i++){
+    /*for(int i=0; i<4; i++){
         RenderChara(gMainRenderer, &game_info.chinf[i], player[i], i);
+    }*/
+
+    for(int i=0; i<CHARA_NUM; i++){
+        
+        if(game_info.chinf[i].type == 0 && i >= 4) continue; 
+
+        if (i < 4) {
+            // プレイヤー (0~3) 
+            // 船の上に乗っているので、これまで通り画面座標で描画
+            RenderChara(gMainRenderer, &game_info.chinf[i], player[i], i);
+        }
+        else if (i == 4) {
+            // 宇宙船自身 (すでにRenderShipで描画しているのでスキップ)
+            continue;
+        }
+        else {
+            // 敵・ゴール (5~6) 
+            // 船の動きに合わせて動かす（相対描画）
+            // ※ここでは仮に player[0] の画像を敵として使ってる、
+            //   本来は敵やゴール用のテクスチャを用意して
+            RenderRelativeChara(gMainRenderer, &game_info.chinf[i], player[0], ship_x, ship_y);
+        }
     }
     /* ??????????????
      *  ????????????1?????????

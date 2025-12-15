@@ -27,6 +27,9 @@
 
 #define SPACESHIP_SIZE 500
 
+#define ID_SHIP 4
+#define SHIP_BASE_SPEED 2.0f
+
 typedef enum {
     IT_MoveL = 0,
     IT_MoveR = 1,
@@ -46,6 +49,7 @@ typedef enum {
     CT_Goal    = 1, // ゴール（地球）
     CT_Enemy   = 2, // 敵
     CT_Ship    = 3, // 宇宙船
+    CT_Bullet  = 4  // 弾
 } CharaType;
 
 //キャラクターの状態　(列挙体)
