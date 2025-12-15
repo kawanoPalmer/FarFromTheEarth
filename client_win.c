@@ -7,6 +7,7 @@ static SDL_Window *gMainWindow;
 static SDL_Renderer *gMainRenderer;
 static SDL_Texture *player[4];
 static SDL_Texture *spaceShip;
+static SDL_Texture *BackGround;
 static GameInfo game_info;
 
 void RecvInfo(GameInfo *info){
@@ -38,6 +39,21 @@ void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
     dst.y = MAX_WINDOW_Y/2-dst.h/2;
 
     SDL_RenderCopy(renderer, tex, NULL, &dst);
+}
+
+void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex)
+{
+    SDL_Rect src, dst;
+    src.w = 45;
+    src.h = 24;
+    src.x = 0;
+    src.y = 0;
+    dst.w = MAX_WINDOW_X;
+    dst.h = MAX_WINDOW_Y;
+    dst.x = 0;
+    dst.y = 0;
+
+    SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
 /* ???????????????????
@@ -74,7 +90,8 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[1] = IMG_LoadTexture(gMainRenderer, "materials_win/player2.png");
     player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
-    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png"); 
+    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png");
+    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground.png"); 
     return 0;
 }
 
