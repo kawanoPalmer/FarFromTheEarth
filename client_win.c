@@ -7,6 +7,7 @@ static SDL_Window *gMainWindow;
 static SDL_Renderer *gMainRenderer;
 static SDL_Texture *player[4];
 static SDL_Texture *spaceShip;
+static SDL_Texture *BackGround;
 static GameInfo game_info;
 
 int DistanceToGoal(float x, float y);
@@ -76,6 +77,21 @@ void RenderDistance(SDL_Renderer* renderer, TTF_Font* tex, float x, float y)
     SDL_FreeSurface(message);
 }
 
+void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex)
+{
+    SDL_Rect src, dst;
+    src.w = 45;
+    src.h = 24;
+    src.x = 0;
+    src.y = 0;
+    dst.w = MAX_WINDOW_X;
+    dst.h = MAX_WINDOW_Y;
+    dst.x = 0;
+    dst.y = 0;
+
+    SDL_RenderCopy(renderer, tex, &src, &dst);
+}
+
 /* ???????????????????
  *
  * ??
@@ -111,7 +127,8 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[1] = IMG_LoadTexture(gMainRenderer, "materials_win/player2.png");
     player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
-    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png"); 
+    spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png");
+    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground.png"); 
     return 0;
 }
 
@@ -158,7 +175,10 @@ void RenderWindow(void)
 
     float ship_x = game_info.chinf[4].point.x;
     float ship_y = game_info.chinf[4].point.y;
-
+    /*Uint8 r = (int)fabs(ship_x) % 255;
+    Uint8 g = (int)fabs(ship_y) % 255;
+    SDL_SetRenderDrawColor(gMainRenderer, r, g, 50, 255);
+    SDL_RenderClear(gMainRenderer);*/
     RenderShip(gMainRenderer, spaceShip);
 
     /*for(int i=0; i<4; i++){
