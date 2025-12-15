@@ -19,6 +19,15 @@ void RecvInfo(GameInfo *info){
     }
 }
 
+int RecvStts(GameInfo *info)
+{
+    int endFlag = 1;
+    if(info->stts == GS_End)
+        endFlag = 0;
+
+    return endFlag;
+}
+
 void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int cid)
 {
     SDL_Rect dst;
@@ -85,6 +94,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 	}
 
 	gMainRenderer = SDL_CreateRenderer(gMainWindow, -1, SDL_RENDERER_SOFTWARE);
+    game_info.stts = GS_Playing;
 
     player[0] = IMG_LoadTexture(gMainRenderer, "materials_win/player1.png");
     player[1] = IMG_LoadTexture(gMainRenderer, "materials_win/player2.png");

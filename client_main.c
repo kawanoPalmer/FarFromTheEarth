@@ -51,8 +51,12 @@ int main(int argc,char *argv[])
     };
 
     /* 終了処理 */
-	DestroyWindow();
-	CloseSoc();
-
+    joycon_close(&jc);   // Joy-Con解放
+    DestroyWindow();     // SDLウィンドウ破棄
+    CloseSoc();          // ソケット切断
+    TTF_Quit();          // SDL_ttf終了
+    IMG_Quit();          // SDL_image終了
+    SDL_Quit();          // SDL終了
+    
     return 0;
 }
