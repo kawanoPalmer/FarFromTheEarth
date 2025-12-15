@@ -125,6 +125,7 @@ typedef struct{
     int X;
     int A;
     int B;
+    int Home;
 }ButtonState;
 
 

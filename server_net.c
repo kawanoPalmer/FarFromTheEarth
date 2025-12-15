@@ -113,7 +113,7 @@ int SendRecvManager(void)
     for(i=0;i<gClientNum;i++){
 		if(FD_ISSET(gClients[i].fd,&readOK)){
 	    	if(recv(gClients[i].fd, buf, sizeof(ClientCommand), 0) > 0){
-        	ProcessClientData(buf, sizeof(ClientCommand));
+        	endFlag = ProcessClientData(buf, sizeof(ClientCommand));
 		    }
     }
     }
