@@ -219,6 +219,10 @@ void UpdateOxygen(void)
     }
     if (game_info.oxy_amount <= 0.0f) {
         // 0以下ならゲームオーバ
+        game_info.stts = GS_End; 
+        
+        // サーバーのログに表示（確認用）
+        fprintf(stderr, "GAME OVER: Oxygen depleted.\n");
     }
 
 }
@@ -305,7 +309,7 @@ void InitGameInfo(void)
     game_info.stts = GS_Playing;
 
     // 酸素タスク初期化
-    game_info.oxy_max = 100.0f;
+    game_info.oxy_max = 30.0f;
     game_info.oxy_amount = game_info.oxy_max;
     game_info.oxy_progress = 0;
     game_info.oxy_required = 50;
