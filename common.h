@@ -107,6 +107,10 @@ typedef struct {
     int hp;           //hp(宇宙船しかつかわんかも)
 } CharaInfo;
 
+typedef struct{
+    int oxglevel;
+}IntractInfo;
+
 
 /* ゲームの情報 (この構造体をサーバーからブロードキャストで送信したりする想定)*/
 typedef struct {

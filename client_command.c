@@ -71,7 +71,7 @@ Direction GetJoyConStick(int clientID)
     return dir;
 }
 
-static ButtonState previous_state = {0, 0, 0};
+static ButtonState previous_state = {0, 0, 0, 0};
 
 int GetJoyConButton(int clientID)
 {
@@ -80,6 +80,7 @@ int GetJoyConButton(int clientID)
     int current_X = jc.button.btn.X; 
     int current_A = jc.button.btn.A; 
     int current_B = jc.button.btn.B; 
+    int current_Home = jc.button.btn.Home;
 
     if (current_X && !previous_state.X){
         pressed_button = 'X';
@@ -87,12 +88,15 @@ int GetJoyConButton(int clientID)
         pressed_button = 'A';
     }else if (current_B && !previous_state.B){
         pressed_button = 'B';
+    }else if (current_Home && !previous_state.Home){
+        pressed_button = 'H';
     }
 
     previous_state.X = current_X;
     previous_state.A = current_A;
     previous_state.B = current_B;
-
+    previous_state.Home = current_Home;
+    
     return pressed_button;
 }
 

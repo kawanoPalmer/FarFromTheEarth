@@ -243,8 +243,10 @@ void InteractManeger(const ClientCommand *cmd)
         game_info.chinf[cmd->client_id].stts = CS_Action;
         break;
     case 'A':
-    game_info.chinf[cmd->client_id].stts = CS_Normal;
-    break;
+        game_info.chinf[cmd->client_id].stts = CS_Normal;
+        break;
+    case 'H':
+        game_info.stts = GS_End;
     default:
         break;
     }
@@ -255,11 +257,12 @@ void InteractManeger(const ClientCommand *cmd)
     data     : クライアントから受信したバイト配列
     dataSize : データサイズ
 */
-void ProcessClientData(const unsigned char *data, int dataSize)
+int ProcessClientData(const unsigned char *data, int dataSize)
 {
+    int endFlag = 1;
     ClientCommand cmd;
-    if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
 
+    if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
             InteractManeger(&cmd);
         if (game_info.chinf[cmd.client_id].stts == CS_Action)
             ExecuteCommand(&game_info.chinf[cmd.client_id], &cmd);
@@ -275,6 +278,9 @@ void ProcessClientData(const unsigned char *data, int dataSize)
             game_info.chinf[cmd.client_id].point.y);
         #endif
     }
+    if(game_info.stts == GS_End)
+        endFlag = 0;
+    return endFlag;
 }
 
 /*サーバ起動時にゲーム情報を初期化する*/
@@ -295,6 +301,8 @@ void InitGameInfo(void)
     game_info.chinf[ID_SHIP].stts = CS_Normal;
     game_info.chinf[ID_SHIP].point.x = 0.0f; 
     game_info.chinf[ID_SHIP].point.y = 0.0f;
+
+    game_info.stts = GS_Playing;
 
     // 酸素タスク初期化
     game_info.oxy_max = 100.0f;
