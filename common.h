@@ -30,6 +30,10 @@
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 2.0f
 
+#define GOAL_POSITION_X 1000
+#define GOAL_POSITION_Y 1000 
+#define OXY_DEPLETION 0.008333f
+
 typedef enum {
     IT_MoveL = 0,
     IT_MoveR = 1,
@@ -109,6 +113,10 @@ typedef struct {
 typedef struct {
     GameStts stts;
     CharaInfo chinf[CHARA_NUM];
+    float oxy_amount; // 現在の酸素量
+    float oxy_max; // 最大の酸素量
+    int oxy_progress;// 現在の進捗
+    int oxy_required;// タスク完了までに必要な進捗
 } GameInfo;
 
 
