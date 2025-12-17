@@ -27,6 +27,9 @@
 
 #define SPACESHIP_SIZE 500
 
+#define MAX_ENEMY 10
+#define ENEMY_ID 5
+
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 2.0f
 
@@ -60,6 +63,7 @@ typedef enum {
 typedef enum {
     CS_Normal = 1, // 通常
     CS_Action = 2, // アクション
+    CS_Alive  = 3,
     CS_Damege = 4  // 被弾 (宇宙船被弾用)
 } CharaStts;
 

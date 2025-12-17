@@ -6,6 +6,7 @@ static TTF_Font* font;
 static SDL_Window *gMainWindow;
 static SDL_Renderer *gMainRenderer;
 static SDL_Texture *player[4];
+static SDL_Texture *enemy;
 static SDL_Texture *spaceShip;
 static SDL_Texture *BackGround;
 static GameInfo game_info;
@@ -129,6 +130,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
     spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png");
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground.png"); 
+    enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy_sample.png");
     return 0;
 }
 
@@ -199,11 +201,9 @@ void RenderWindow(void)
             continue;
         }
         else {
-            // 敵・ゴール (5~6) 
-            // 船の動きに合わせて動かす（相対描画）
-            // ※ここでは仮に player[0] の画像を敵として使ってる、
-            //   本来は敵やゴール用のテクスチャを用意して
-            RenderRelativeChara(gMainRenderer, &game_info.chinf[i], player[0], ship_x, ship_y);
+            if (game_info.chinf[i].type == CT_Enemy) {
+            RenderRelativeChara(gMainRenderer, &game_info.chinf[i], enemy, ship_x, ship_y);
+            }
         }
     }
     /* ??????????????

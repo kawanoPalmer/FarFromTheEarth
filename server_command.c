@@ -300,6 +300,18 @@ void InitGameInfo(void)
         game_info.chinf[i].w       = 20;
         game_info.chinf[i].h       = 30;
     }
+
+    // 敵の初期化
+    for (int i = 0; i < MAX_ENEMY; i++) {
+        int id = ENEMY_ID + i;
+        game_info.chinf[id].type = CT_Enemy;
+        game_info.chinf[id].stts = CS_Alive;
+
+        game_info.chinf[id].point.x = (rand() % 2000) - 1000;
+        game_info.chinf[id].point.y = (rand() % 2000) - 1000;
+        game_info.chinf[id].w = 30;
+        game_info.chinf[id].h = 30;
+    }
     // 宇宙船初期化
     game_info.chinf[ID_SHIP].type = CT_Ship;
     game_info.chinf[ID_SHIP].stts = CS_Normal;
