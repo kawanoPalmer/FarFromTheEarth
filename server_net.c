@@ -97,7 +97,7 @@ int SetUpServer(int num)
 *****************************************************************/
 int SendRecvManager(void)
 {
-    unsigned char	buf[1024];
+    unsigned char	buf[MAX_DATA];
     //今送られているデータのサイズ
     fd_set	readOK;
     int		i;

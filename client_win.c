@@ -78,13 +78,15 @@ void RenderDistance(SDL_Renderer* renderer, TTF_Font* tex, float x, float y)
     SDL_FreeSurface(message);
 }
 
-void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex)
+void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
 {
-    SDL_Rect src, dst;
-    src.w = 45;
-    src.h = 24;
-    src.x = 0;
-    src.y = 0;
+
+    SDL_Rect src,dst; 
+    
+    src.w = MAX_WINDOW_X;
+    src.h = MAX_WINDOW_Y;
+    src.x = x;
+    src.y = y;
     dst.w = MAX_WINDOW_X;
     dst.h = MAX_WINDOW_Y;
     dst.x = 0;
@@ -121,7 +123,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 		return -1;
 	}
 
-	gMainRenderer = SDL_CreateRenderer(gMainWindow, -1, SDL_RENDERER_SOFTWARE);
+	gMainRenderer = SDL_CreateRenderer(gMainWindow, -1, SDL_RENDERER_ACCELERATED);
     game_info.stts = GS_Playing;
 
     player[0] = IMG_LoadTexture(gMainRenderer, "materials_win/player1.png");
@@ -129,6 +131,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
     spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png");
+    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground.png"); 
     enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy_sample.png");
     return 0;
@@ -177,6 +180,9 @@ void RenderWindow(void)
 
     float ship_x = game_info.chinf[4].point.x;
     float ship_y = game_info.chinf[4].point.y;
+
+    RenderBackGround(gMainRenderer, BackGround, (int)(ship_x/10), (int)(ship_y/10));
+
     /*Uint8 r = (int)fabs(ship_x) % 255;
     Uint8 g = (int)fabs(ship_y) % 255;
     SDL_SetRenderDrawColor(gMainRenderer, r, g, 50, 255);

@@ -222,6 +222,14 @@ int RecvData(void *data,int dataSize)
     /* �����������å� */
     assert(data != NULL);
     assert(0 < dataSize);
+    char *buf = (char *)data;
+    int received = 0;
+    int n;
+    //return read(gSocket,data,dataSize);
+    while (received < dataSize) {
+        n = read(gSocket, buf + received, dataSize - received);
+        received += n;
+    }
 
-    return read(gSocket,data,dataSize);
+    return received;
 }
