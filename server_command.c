@@ -6,6 +6,10 @@
 /*サーバが管理するゲーム全体情報(プレイヤ位置など)*/
 GameInfo game_info;
 ClientCommand clientsCommand[MAX_CLIENTS];
+static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
+
+static int obstacles_num = 0;
+static int obstacles_loaded = 0;
 
 SDL_Surface* mask;
 
@@ -69,6 +73,29 @@ int ColorDecision(SDL_Surface *surface, int x, int y){
 
 }
 
+int CollisionInSpace(CharaInfo *ship, FloatPoint delta)
+{
+    for(int i=0; i<obstacles_num; i++){
+            FloatPoint obstacle_pos = ObstaclesInfo[i].point;
+            float rad_sum = ship->r + ObstaclesInfo[i].r;
+
+            // 移動後の船の予測位置（世界座標）
+            float future_ship_x = ship->point.x + delta.x;
+            float future_ship_y = ship->point.y + delta.y;
+
+            // 障害物との距離の二乗を計算
+            float dx = obstacle_pos.x - future_ship_x;
+            float dy = obstacle_pos.y - future_ship_y;
+            float distSq = dx * dx + dy * dy;
+
+            if(distSq <= (rad_sum * rad_sum)){
+                fprintf(stderr, "Collide! with Obstacle %d\n", i);
+                return 0; // 衝突
+            }
+        }
+    return 1;
+}
+
 void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
 {
     int Interaction = ColorDecision(mask, ch->point.x, ch->point.y);
@@ -88,22 +115,32 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
     static int cooldown = 0;
     if (cooldown > 0) cooldown--;
 
+    FloatPoint delta;
+    delta.x = stick_vec.x * actual_speed;
+    delta.y = stick_vec.y * actual_speed;
+
+    FloatPoint checkDelta;
+
     switch (Interaction) {
         //IT_MoveR: 左右操作 赤
         case IT_MoveR: 
-            // スティックのX軸入力を船のX移動に使う
-            if (stick_len > 0.1f){
-            ship->point.x += stick_vec.x * actual_speed;
-            fprintf(stderr, "[Ship] Move X: %.1f\n", ship->point.x);
+            checkDelta.x = delta.x;
+            checkDelta.y = 0.0f; // Y方向の移動はないものとして判定する
+
+            if (stick_len > 0.1f && CollisionInSpace(ship, checkDelta)){
+                ship->point.x += delta.x;
+                fprintf(stderr, "[Ship] Move X: %.1f\n", ship->point.x);
             }
             break;
             
         //IT_MoveL: 上下操作 青
         case IT_MoveL: 
-            // スティックのY軸入力を船のY移動に使う (SDLではYが増加すると下へ移動)
-            if (stick_len > 0.1f) {
-            ship->point.y += stick_vec.y * actual_speed;
-            fprintf(stderr, "[Ship] Move Y: %.1f\n", ship->point.y);
+            checkDelta.x = 0.0f; // Xは動かさない
+            checkDelta.y = delta.y;
+
+            if (stick_len > 0.1f && CollisionInSpace(ship, checkDelta)) {
+                ship->point.y += delta.y;
+                fprintf(stderr, "[Ship] Move Y: %.1f\n", ship->point.y);
             }
             break;
         
@@ -305,7 +342,7 @@ void InitGameInfo(void)
     game_info.chinf[ID_SHIP].stts = CS_Normal;
     game_info.chinf[ID_SHIP].point.x = 0.0f; 
     game_info.chinf[ID_SHIP].point.y = 0.0f;
-
+    game_info.chinf[ID_SHIP].r = SPACESHIP_SIZE/2;
     game_info.stts = GS_Playing;
 
     // 酸素タスク初期化
@@ -324,4 +361,39 @@ void InitGameInfo(void)
         src->format->Amask
     );
     SDL_BlitScaled(src, NULL, mask, NULL);
+
+    /** マップ情報読込 **/
+    FILE* fp = fopen("materials_win/obstacles.txt", "r");
+    if (fp == NULL) {
+        fprintf(stderr, "failed to open map data file.\n");
+    }
+
+    /* 前ステージで読み込んだ行数分スキップ */
+    for (int i = 0; i < obstacles_loaded; i++) {
+        char dummy[256];
+        if (!fgets(dummy, sizeof(dummy), fp)) {
+            // ファイル終端に到達した場合は break
+            break;
+        }
+    }
+
+    char linebuf[256];
+    while (fgets(linebuf, sizeof(linebuf), fp)) {
+        if (linebuf[0] == '#') continue;
+        if (linebuf[0] == '*'){
+            
+            break;
+        }
+        if (obstacles_num < OBSTACLE_MAXNUM) {
+            int x, y, r;
+            if (sscanf(linebuf, "%d %d %d", &x, &y, &r) == 3) {
+                ObstaclesInfo[obstacles_num].point.x = x;
+                ObstaclesInfo[obstacles_num].point.y = y;
+                ObstaclesInfo[obstacles_num].r       = r;
+                obstacles_num++;
+                obstacles_loaded++;
+            }
+        }
+    }
+    fclose(fp);
 }

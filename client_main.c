@@ -4,6 +4,7 @@
 #include "constants.h"
 
 joyconlib_t jc;
+SDL_Event e;
 
 int main(int argc,char *argv[])
 {
@@ -45,9 +46,14 @@ int main(int argc,char *argv[])
   }
     /* メインイベントループ */
     while(endFlag){
+      while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) {
+            endFlag = 0;
+        }
+      }
       RenderWindow();
-		SendClientCommand(clientID);
-		endFlag = SendRecvManager();
+      SendClientCommand(clientID);
+      endFlag = SendRecvManager();
     };
 
     /* 終了処理 */

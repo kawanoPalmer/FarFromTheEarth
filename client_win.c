@@ -8,8 +8,12 @@ static SDL_Renderer *gMainRenderer;
 static SDL_Texture *player[4];
 static SDL_Texture *spaceShip;
 static SDL_Texture *BackGround;
+static SDL_Texture *ObstaclesTex;
 static GameInfo game_info;
+static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
 
+static int obstacles_num = 0;
+static int obstacles_loaded = 0;
 int DistanceToGoal(float x, float y);
 
 void RecvInfo(GameInfo *info){
@@ -33,8 +37,8 @@ int RecvStts(GameInfo *info)
 void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int cid)
 {
     SDL_Rect dst;
-    dst.x = ch->point.x;
-    dst.y = ch->point.y;
+    dst.x = ch->point.x-ch->w/2;
+    dst.y = ch->point.y-ch->h/2;
     dst.w = ch->w;
     dst.h = ch->h;
 
@@ -52,29 +56,29 @@ void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
     SDL_RenderCopy(renderer, tex, NULL, &dst);
 }
 
-void RenderDistance(SDL_Renderer* renderer, TTF_Font* tex, float x, float y)
+void RenderDistance(SDL_Renderer* renderer, float x, float y)
 {
     int distance = DistanceToGoal(x, y);
-    char buf[64];
-    snprintf(buf, sizeof(buf), "次の惑星まで: %dAU", distance);
+    char buf1[64], buf2[64];
+    snprintf(buf1, sizeof(buf1), "次の惑星まで: %dAU", distance);
 
     // 白色で描画
-    SDL_Color white = {0, 0, 0, 255};
-    SDL_Surface *message = TTF_RenderUTF8_Solid(font, buf, white);
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface *msg_distance = TTF_RenderUTF8_Solid(font, buf1, white);
 
-    SDL_Texture *textTex = SDL_CreateTextureFromSurface(renderer, message);
+    SDL_Texture *textTex = SDL_CreateTextureFromSurface(renderer, msg_distance);
 
     // 描画位置を上部中央に設定
     SDL_Rect dst;
-    dst.w = message->w*2;
-    dst.h = message->h*2;
+    dst.w = msg_distance->w*2;
+    dst.h = msg_distance->h*2;
     dst.x = 10;
-    dst.y = 5;   // 上から少し下げる
+    dst.y = 700;   // 上から少し下げる
 
     SDL_RenderCopy(renderer, textTex, NULL, &dst);
 
     SDL_DestroyTexture(textTex);
-    SDL_FreeSurface(message);
+    SDL_FreeSurface(msg_distance);
 }
 
 void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
@@ -93,6 +97,21 @@ void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
 
     SDL_RenderCopy(renderer, tex, &src, &dst);
 }
+
+void RenderObstacles(SDL_Renderer* renderer, SDL_Texture* tex, int ship_x, int ship_y)
+{
+    int center_x = MAX_WINDOW_X/2;
+    int center_y = MAX_WINDOW_Y/2;
+    for (int i=0; i<obstacles_num; i++){
+        SDL_Rect dst;
+        dst.x = (ObstaclesInfo[i].point.x - ship_x) + center_x - ObstaclesInfo[i].r;
+        dst.y = (ObstaclesInfo[i].point.y - ship_y) + center_y - ObstaclesInfo[i].r;
+        dst.w = ObstaclesInfo[i].r * 2;
+        dst.h = ObstaclesInfo[i].r * 2;
+        SDL_RenderCopy(renderer, tex, NULL, &dst);
+    }
+}
+
 
 /* ???????????????????
  *
@@ -131,6 +150,43 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
     spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship_proto2.png");
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
+    ObstaclesTex = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle.png");
+
+    /** マップ情報読込 **/
+    FILE* fp = fopen("materials_win/obstacles.txt", "r");
+    if (fp == NULL) {
+        return fprintf(stderr, "failed to open map data file.\n");
+    }
+
+    /* 前ステージで読み込んだ行数分スキップ */
+    for (int i = 0; i < obstacles_loaded; i++) {
+        char dummy[256];
+        if (!fgets(dummy, sizeof(dummy), fp)) {
+            // ファイル終端に到達した場合は break
+            break;
+        }
+    }
+
+    char linebuf[256];
+    while (fgets(linebuf, sizeof(linebuf), fp)) {
+        if (linebuf[0] == '#') continue;
+        if (linebuf[0] == '*'){
+            
+            break;
+        }
+        if (obstacles_num < OBSTACLE_MAXNUM) {
+            int x, y, r;
+            if (sscanf(linebuf, "%d %d %d", &x, &y, &r) == 3) {
+                ObstaclesInfo[obstacles_num].point.x = x;
+                ObstaclesInfo[obstacles_num].point.y = y;
+                ObstaclesInfo[obstacles_num].r       = r;
+                obstacles_num++;
+                obstacles_loaded++;
+            }
+        }
+    }
+    fclose(fp);
+
     return 0;
 }
 
@@ -175,10 +231,11 @@ void RenderWindow(void)
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 255, 255);
     SDL_RenderClear(gMainRenderer);
 
-    float ship_x = game_info.chinf[4].point.x;
-    float ship_y = game_info.chinf[4].point.y;
+    float ship_x = game_info.chinf[4].point.x + MAX_WINDOW_X/2-250;
+    float ship_y = game_info.chinf[4].point.y + MAX_WINDOW_Y/2-250;
 
     RenderBackGround(gMainRenderer, BackGround, (int)(ship_x/10), (int)(ship_y/10));
+    RenderObstacles(gMainRenderer, ObstaclesTex, ship_x, ship_y);
 
     /*Uint8 r = (int)fabs(ship_x) % 255;
     Uint8 g = (int)fabs(ship_y) % 255;
@@ -214,7 +271,7 @@ void RenderWindow(void)
     /* ??????????????
      *  ????????????1?????????
      */
-    RenderDistance(gMainRenderer, font, ship_x, ship_y);
+    RenderDistance(gMainRenderer, ship_x, ship_y);
     SDL_RenderPresent(gMainRenderer);
 }
 

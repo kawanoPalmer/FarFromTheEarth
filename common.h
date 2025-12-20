@@ -24,14 +24,15 @@
 
 #define CHARATYPE_MAXNUM 4 // キャラタイプ総数
 #define CHARA_NUM 7 //クライアント(4) + ゴール(1) + 敵(1) + 宇宙船(1)
+#define OBSTACLE_MAXNUM 10
 
 #define SPACESHIP_SIZE 500
 
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 2.0f
 
-#define GOAL_POSITION_X 1000
-#define GOAL_POSITION_Y 1000 
+#define GOAL_POSITION_X 10000
+#define GOAL_POSITION_Y 10000
 #define OXY_DEPLETION 0.008333f
 
 typedef enum {
@@ -106,6 +107,7 @@ typedef struct {
     FloatPoint point; /* 現在の座標 */
     int w;            /* キャラの幅 */
     int h;            /* 　　　　高さ */
+    int r;
     int hp;           //hp(宇宙船しかつかわんかも)
 } CharaInfo;
 
