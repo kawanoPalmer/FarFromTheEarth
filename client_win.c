@@ -46,6 +46,15 @@ void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int ci
     SDL_RenderCopy(renderer, tex, NULL, &dst);
 }
 
+static inline void WorldToScreen(float obj_x, float obj_y, float ship_x, float ship_y, int *out_x, int *out_y)
+{
+    int center_x = MAX_WINDOW_X / 2;
+    int center_y = MAX_WINDOW_Y / 2;
+    *out_x = (int)(obj_x - ship_x) + center_x;
+    *out_y = (int)(obj_y - ship_y) + center_y;
+}
+
+
 void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
 {
     SDL_Rect dst;
@@ -124,19 +133,29 @@ void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
     SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
-void RenderObstacles(SDL_Renderer* renderer, SDL_Texture* tex, int ship_x, int ship_y)
+void RenderObstacles(SDL_Renderer* renderer, SDL_Texture* tex, float ship_x, float ship_y)
 {
-    int center_x = MAX_WINDOW_X/2;
-    int center_y = MAX_WINDOW_Y/2;
-    for (int i=0; i<obstacles_num; i++){
+    if (!tex) return;
+    int center_x = MAX_WINDOW_X / 2;
+    int center_y = MAX_WINDOW_Y / 2;
+
+    for (int i = 0; i < obstacles_num; ++i) {
+        int sx, sy;
+        WorldToScreen(ObstaclesInfo[i].point.x, ObstaclesInfo[i].point.y, ship_x, ship_y, &sx, &sy);
+
         SDL_Rect dst;
-        dst.x = (ObstaclesInfo[i].point.x - ship_x) + center_x - ObstaclesInfo[i].r;
-        dst.y = (ObstaclesInfo[i].point.y - ship_y) + center_y - ObstaclesInfo[i].r;
+        dst.x = sx - ObstaclesInfo[i].r;
+        dst.y = sy - ObstaclesInfo[i].r;
         dst.w = ObstaclesInfo[i].r * 2;
         dst.h = ObstaclesInfo[i].r * 2;
+
+        // 画面外なら描画をスキップして高速化
+        if (dst.x + dst.w < 0 || dst.x > MAX_WINDOW_X || dst.y + dst.h < 0 || dst.y > MAX_WINDOW_Y) continue;
+
         SDL_RenderCopy(renderer, tex, NULL, &dst);
     }
 }
+
 
 
 /* ???????????????????
@@ -234,21 +253,19 @@ void DestroyWindow(void)
 
 void RenderRelativeChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, float ship_x, float ship_y)
 {
-    SDL_Rect dst;
-    
-    // 画面中央（船の中心）の座標
-    int center_x = MAX_WINDOW_X / 2;
-    int center_y = MAX_WINDOW_Y / 2;
+    if (!tex || !ch) return;
+    int sx, sy;
+    WorldToScreen(ch->point.x, ch->point.y, ship_x, ship_y, &sx, &sy);
 
-    // 計算式: (オブジェクトの座標 - 船の座標) + 画面オフセット
-    // 船が右(x+)に進むと、(obj - ship) は小さくなるので、オブジェクトは左に流れる
-    dst.x = (int)(ch->point.x - ship_x) + center_x - ch->w / 2;
-    dst.y = (int)(ch->point.y - ship_y) + center_y - ch->h / 2;
+    SDL_Rect dst;
+    dst.x = sx - ch->w / 2;
+    dst.y = sy - ch->h / 2;
     dst.w = ch->w;
     dst.h = ch->h;
 
     SDL_RenderCopy(renderer, tex, NULL, &dst);
 }
+
 
 
 /* ???????
@@ -259,11 +276,11 @@ void RenderWindow(void)
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 255, 255);
     SDL_RenderClear(gMainRenderer);
 
-    float ship_x = game_info.chinf[4].point.x + MAX_WINDOW_X/2-250;
-    float ship_y = game_info.chinf[4].point.y + MAX_WINDOW_Y/2-250;
+    float ship_world_x = game_info.chinf[4].point.x;
+    float ship_world_y = game_info.chinf[4].point.y;
 
-    RenderBackGround(gMainRenderer, BackGround, (int)(ship_x/40), (int)(ship_y/40));
-    RenderObstacles(gMainRenderer, ObstaclesTex, ship_x, ship_y);
+    RenderBackGround(gMainRenderer, BackGround, (int)(ship_world_x/40), (int)(ship_world_y/40));
+    RenderObstacles(gMainRenderer, ObstaclesTex, ship_world_x, ship_world_y);
 
     /*Uint8 r = (int)fabs(ship_x) % 255;
     Uint8 g = (int)fabs(ship_y) % 255;
@@ -290,14 +307,14 @@ void RenderWindow(void)
         }
         else {
             if (game_info.chinf[i].type == CT_Enemy) {
-            RenderRelativeChara(gMainRenderer, &game_info.chinf[i], enemy, ship_x, ship_y);
+            RenderRelativeChara(gMainRenderer, &game_info.chinf[i], enemy, ship_world_x, ship_world_y);
             }
         }
     }
     /* ??????????????
      *  ????????????1?????????
      */
-    RenderDistance(gMainRenderer, ship_x, ship_y);
+    RenderDistance(gMainRenderer, ship_world_x, ship_world_y);
     RenderOxgeLevel(gMainRenderer, font, game_info.oxy_amount, game_info.oxy_max);
     SDL_RenderPresent(gMainRenderer);
 }
