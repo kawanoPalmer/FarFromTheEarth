@@ -1,7 +1,7 @@
 #include"server_common.h"
 #include"server_func.h"
 #include <arpa/inet.h>
-
+#include<time.h>
 
 /*サーバが管理するゲーム全体情報(プレイヤ位置など)*/
 GameInfo game_info;
@@ -217,9 +217,6 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     memcpy(&cmd->velocity, &v_bits, sizeof(float));
     offset += sizeof(v_bits);
 
-    // act は未使用（コメントアウト中）
-   // cmd->act = AT_OpX; 
-
     return 0;
 }
 
@@ -261,7 +258,33 @@ void UpdateOxygen(void)
         // サーバーのログに表示（確認用）
         fprintf(stderr, "GAME OVER: Oxygen depleted.\n");
     }
+}
 
+void UpdateEnemy(void)
+{
+    CharaInfo *ship = &game_info.chinf[ID_SHIP];
+    const float HALF_WIDTH = 1500.0f / 2.0f;
+    const float HALF_HEIGHT = 800.0f / 2.0f;
+
+    for (int i = 0; i < MAX_ENEMY; i++) {
+        int id = ENEMY_ID + i;
+        CharaInfo *enemy = &game_info.chinf[id];
+
+        if (enemy->stts != CS_Alive) continue;
+        float dx = ship->point.x - enemy->point.x;
+        float dy = ship->point.y - enemy->point.y;
+
+        if (fabsf(dx) < HALF_WIDTH && fabsf(dy) < HALF_HEIGHT) {
+            float dist = sqrtf(dx * dx + dy * dy);
+            if (dist > 1.0f) {
+            float move_x = (dx / dist) * ENEMY_SPEED;
+            float move_y = (dy / dist) * ENEMY_SPEED;
+
+            enemy->point.x += move_x;
+            enemy->point.y += move_y;
+            }
+        }
+    }
 }
 
 /*ゲーム情報を全クライアントに送信*/
@@ -327,6 +350,7 @@ int ProcessClientData(const unsigned char *data, int dataSize)
 /*サーバ起動時にゲーム情報を初期化する*/
 void InitGameInfo(void)
 {
+    srand((unsigned)time(NULL));
     memset(&game_info, 0, sizeof(GameInfo));
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -337,6 +361,31 @@ void InitGameInfo(void)
         game_info.chinf[i].w       = 20;
         game_info.chinf[i].h       = 30;
     }
+
+    // 敵の初期化
+    for (int i = 0; i < MAX_ENEMY; i++) {
+        int id = ENEMY_ID + i;
+        game_info.chinf[id].type = CT_Enemy;
+        game_info.chinf[id].stts = CS_Alive;
+
+        /*game_info.chinf[id].point.x = (rand() % 2000) - 1000;
+        game_info.chinf[id].point.y = (rand() % 2000) - 1000;*/
+        game_info.chinf[id].w = 40;
+        game_info.chinf[id].h = 40;
+        float x, y, dist;
+
+        do {
+            x = (rand() % SPAWN_RANGE) - (SPAWN_RANGE / 2);
+            y = (rand() % SPAWN_RANGE) - (SPAWN_RANGE / 2);
+
+            dist = sqrtf(x * x + y * y);
+        } while (dist < SAFE_RADIUS);
+
+        game_info.chinf[id].point.x = x;
+        game_info.chinf[id].point.y = y;
+        fprintf(stderr, "Enemy[%d] (%.1f, %.1f)\n", i, x, y);
+    }
+
     // 宇宙船初期化
     game_info.chinf[ID_SHIP].type = CT_Ship;
     game_info.chinf[ID_SHIP].stts = CS_Normal;

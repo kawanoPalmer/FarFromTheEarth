@@ -23,13 +23,22 @@
 #define MAX_DATA		20000				/* 送受信するデータの最大値 */
 
 #define CHARATYPE_MAXNUM 4 // キャラタイプ総数
-#define CHARA_NUM 7 //クライアント(4) + ゴール(1) + 敵(1) + 宇宙船(1)
+
 #define OBSTACLE_MAXNUM 10
+#define CHARA_NUM (MAX_CLIENTS + 1 + 1 + MAX_ENEMY) //クライアント(4) + ゴール(1) + 敵(1) + 宇宙船(1)
 
 #define SPACESHIP_SIZE 500
 
+#define MAX_ENEMY 20
+#define ENEMY_ID 6
+#define ENEMY_SPEED 2.0f
+#define ENEMY_RANGE 1000.0f
+
+#define SPAWN_RANGE 3800     // 出現エリアの広さ 
+#define SAFE_RADIUS 1000.0f   // 安全地帯の半径
+
 #define ID_SHIP 4
-#define SHIP_BASE_SPEED 2.0f
+#define SHIP_BASE_SPEED 4.0f
 
 #define GOAL_POSITION_X 10000
 #define GOAL_POSITION_Y 10000
@@ -61,6 +70,7 @@ typedef enum {
 typedef enum {
     CS_Normal = 1, // 通常
     CS_Action = 2, // アクション
+    CS_Alive  = 3,
     CS_Damege = 4  // 被弾 (宇宙船被弾用)
 } CharaStts;
 
