@@ -17,7 +17,7 @@ typedef struct{
 }CLIENT;
 
 static CLIENT	gClients[MAX_CLIENTS];	/* 鐃緒申鐃初イ鐃緒申鐃緒申鐃� */
-static int	gClientNum;					/* 鐃緒申鐃初イ鐃緒申鐃緒申反鐃� */
+int	gClientNum;					/* 鐃緒申鐃初イ鐃緒申鐃緒申反鐃� */
 
 static fd_set	gMask;					/* select()鐃術のマワ申鐃緒申 */
 static int	gWidth;						/* gMask鐃緒申離鐃緒申鐃緒申奪鐃緒申鐃緒申戮鐃緒申咼奪反鐃� */

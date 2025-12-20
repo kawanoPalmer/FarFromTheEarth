@@ -8,10 +8,25 @@ GameInfo game_info;
 ClientCommand clientsCommand[MAX_CLIENTS];
 static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
 
+extern int gClientNum;
+static int gReady[MAX_CLIENTS] = {0,0,0,0};
 static int obstacles_num = 0;
 static int obstacles_loaded = 0;
 
 SDL_Surface* mask;
+
+int CheckStartCondition(void) {
+    int cnt = 0;
+    for (int i = 0; i < gClientNum; ++i) {
+        if (gReady[i]) ++cnt;
+    }
+    if (cnt >= gClientNum) {
+        // 全員準備OKになった -> ゲーム開始を通知
+        game_info.stts = GS_Playing;
+        return 0;
+    }
+    return 1;
+}
 
 int ColorDecision(SDL_Surface *surface, int x, int y){
     Uint8 r, g, b;
@@ -74,25 +89,38 @@ int ColorDecision(SDL_Surface *surface, int x, int y){
 }
 
 int CollisionInSpace(CharaInfo *ship, FloatPoint delta)
-{
+{             
+     // 移動後の船の予測位置（世界座標）
+    float future_ship_x = ship->point.x + delta.x;
+    float future_ship_y = ship->point.y + delta.y;
+
     for(int i=0; i<obstacles_num; i++){
-            FloatPoint obstacle_pos = ObstaclesInfo[i].point;
-            float rad_sum = ship->r + ObstaclesInfo[i].r;
+        FloatPoint obstacle_pos = ObstaclesInfo[i].point;
+        float rad_sum = ship->r + ObstaclesInfo[i].r;
 
-            // 移動後の船の予測位置（世界座標）
-            float future_ship_x = ship->point.x + delta.x;
-            float future_ship_y = ship->point.y + delta.y;
 
-            // 障害物との距離の二乗を計算
-            float dx = obstacle_pos.x - future_ship_x;
-            float dy = obstacle_pos.y - future_ship_y;
-            float distSq = dx * dx + dy * dy;
+        // 障害物との距離の二乗を計算
+        float dx = obstacle_pos.x - future_ship_x;
+        float dy = obstacle_pos.y - future_ship_y;
+        float distSq = dx * dx + dy * dy;
 
-            if(distSq <= (rad_sum * rad_sum)){
-                fprintf(stderr, "Collide! with Obstacle %d\n", i);
-                return 0; // 衝突
-            }
+        if(distSq <= (rad_sum * rad_sum)){
+            fprintf(stderr, "Collide! with Obstacle %d\n", i);
+            return 0; // 衝突
         }
+    }
+    
+    float rad_sum_goal = ship->r + GOAL_POSITION_R;
+    float dx_G = GOAL_POSITION_X - future_ship_x;
+    float dy_G = GOAL_POSITION_Y - future_ship_y;
+    float distSq_G = dx_G * dx_G + dy_G * dy_G;
+
+    if(distSq_G <= (rad_sum_goal * rad_sum_goal)){
+        fprintf(stderr, "Goal!\n");
+        game_info.stts = GS_Result;
+        return 0;
+    }
+
     return 1;
 }
 
@@ -325,33 +353,63 @@ int ProcessClientData(const unsigned char *data, int dataSize)
 {
     int endFlag = 1;
     ClientCommand cmd;
+    switch(game_info.stts){
+        case GS_Title:
+            if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
+                    switch(cmd.act){
+                            case 'X':
+                                gReady[cmd.client_id] = 1;
+                                break;
+                            case 'A':
+                                gReady[cmd.client_id] = 0;
+                                break;
+                            case 'H':
+                                game_info.stts = GS_End;
+                            default:
+                                break;
+                    }
+            }
+            endFlag = CheckStartCondition();
+            return endFlag;
+            break;
 
-    if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
-            InteractManeger(&cmd);
-        if (game_info.chinf[cmd.client_id].stts == CS_Action)
-            ExecuteCommand(&game_info.chinf[cmd.client_id], &cmd);
-        // サーバ側のキャラ位置を更新
-        if (game_info.chinf[cmd.client_id].stts == CS_Normal)
-            UpdateCharaPosition(&cmd);
-            
+        case GS_Playing:
+            if (UnpackClientCommand(data, dataSize, &cmd) == 0) {
+                    InteractManeger(&cmd);
+                if (game_info.chinf[cmd.client_id].stts == CS_Action)
+                    ExecuteCommand(&game_info.chinf[cmd.client_id], &cmd);
+                // サーバ側のキャラ位置を更新
+                if (game_info.chinf[cmd.client_id].stts == CS_Normal)
+                    UpdateCharaPosition(&cmd);
+                    
 
-        #ifndef NDEBUG
-        printf("Server: client %d moved to (%.2f, %.2f)\n",
-            cmd.client_id,
-            game_info.chinf[cmd.client_id].point.x,
-            game_info.chinf[cmd.client_id].point.y);
-        #endif
+                #ifndef NDEBUG
+                printf("Server: client %d moved to (%.2f, %.2f)\n",
+                    cmd.client_id,
+                    game_info.chinf[cmd.client_id].point.x,
+                    game_info.chinf[cmd.client_id].point.y);
+                #endif
+            }
+            if(game_info.stts == GS_End)
+                endFlag = GS_End;
+            else if(game_info.stts ==GS_Result)
+                endFlag = GS_Result;
+            return endFlag;
+            break;
     }
-    if(game_info.stts == GS_End)
-        endFlag = 0;
-    return endFlag;
 }
 
 /*サーバ起動時にゲーム情報を初期化する*/
 void InitGameInfo(void)
 {
+    //spaceshipの描画ズレ補正用
+    static int offset_x = MAX_WINDOW_X/2-SPACESHIP_SIZE/2;
+    static int offset_y = MAX_WINDOW_Y/2-SPACESHIP_SIZE/2;
+
     srand((unsigned)time(NULL));
     memset(&game_info, 0, sizeof(GameInfo));
+
+    game_info.stts = GS_Title;
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
         game_info.chinf[i].stts = CS_Normal;
@@ -389,10 +447,9 @@ void InitGameInfo(void)
     // 宇宙船初期化
     game_info.chinf[ID_SHIP].type = CT_Ship;
     game_info.chinf[ID_SHIP].stts = CS_Normal;
-    game_info.chinf[ID_SHIP].point.x = 0.0f; 
-    game_info.chinf[ID_SHIP].point.y = 0.0f;
+    game_info.chinf[ID_SHIP].point.x = offset_x; 
+    game_info.chinf[ID_SHIP].point.y = offset_y;
     game_info.chinf[ID_SHIP].r = SPACESHIP_SIZE/2;
-    game_info.stts = GS_Playing;
 
     // 酸素タスク初期化
     game_info.oxy_max = 30.0f;
@@ -445,4 +502,9 @@ void InitGameInfo(void)
         }
     }
     fclose(fp);
+}
+
+void AfterPlayingRoop(void)
+{
+    game_info.stts = GS_End;	
 }

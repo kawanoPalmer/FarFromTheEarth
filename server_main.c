@@ -7,6 +7,8 @@
 #include"server_func.h"
 
 static Uint32 SignalHandler(Uint32 interval, void *param);
+extern void AfterPlayingRoop(void);
+static Uint32 CallAfter4Sec(Uint32 interval, void *param);
 
 int main(int argc,char *argv[])
 {
@@ -36,17 +38,25 @@ int main(int argc,char *argv[])
 	}
 	
 	InitGameInfo();
-	
+	while(endFlag){
+		endFlag = SendRecvManager();
+	}
+	endFlag = 1;
 	/* �����߽����Υ��å� */
 	SDL_AddTimer(16,SignalHandler,NULL);
 	
 	/* �ᥤ�󥤥٥�ȥ롼�� */
-	while(endFlag){
+	while(endFlag == GS_Playing){
 		endFlag = SendRecvManager();
 	};
 
-	/* ��λ���� */
-	Ending();
+	AfterPlayingRoop();
+	SDL_AddTimer(4000, endFlag = CallAfter4Sec, NULL);
+
+	while(endFlag == GS_Result){
+		continue;
+	}
+
 
 	return 0;
 }
@@ -65,4 +75,10 @@ static Uint32 SignalHandler(Uint32 interval, void *param)
 	UpdateOxygen();
 	BroadcastGameInfo();
 	return interval;
+}
+
+static Uint32 CallAfter4Sec(Uint32 interval, void *param)
+{
+	Ending();
+    return 0;   // 0 を返すと「一度だけ実行」で終了
 }

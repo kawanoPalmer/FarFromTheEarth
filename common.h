@@ -40,8 +40,9 @@
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 4.0f
 
-#define GOAL_POSITION_X 10000
-#define GOAL_POSITION_Y 10000
+#define GOAL_POSITION_X 5000
+#define GOAL_POSITION_Y 5000
+#define GOAL_POSITION_R 500
 #define OXY_DEPLETION 0.008333f
 
 typedef enum {
@@ -77,7 +78,7 @@ typedef enum {
 typedef enum{
     GS_End     = 0, /* 終了 */
     GS_Playing = 1, /* ゲーム中 */
-    GS_Stay    = 2, //クライアント待機中
+    GS_Title    = 2, //クライアント待機中
     GS_Result  = 3  //いるかわからんけどリザルト画面とか続けて遊ぶとか選べるかも
 }GameStts;
 
