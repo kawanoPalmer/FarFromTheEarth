@@ -78,6 +78,31 @@ void RenderDistance(SDL_Renderer* renderer, TTF_Font* tex, float x, float y)
     SDL_FreeSurface(message);
 }
 
+void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float max)
+{
+    char buf[64];
+    snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)((amount/max)*100));
+
+    // 白色で描画
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface *message = TTF_RenderUTF8_Solid(font, buf, white);
+
+    SDL_Texture *textTex = SDL_CreateTextureFromSurface(renderer, message);
+
+    // 描画位置を上部中央に設定
+    SDL_Rect dst;
+    dst.w = message->w*2;
+    dst.h = message->h*2;
+    dst.x = 10;
+    dst.y = 40;   // 上から少し下げる
+
+    SDL_RenderCopy(renderer, textTex, NULL, &dst);
+
+    SDL_DestroyTexture(textTex);
+    SDL_FreeSurface(message);
+}
+
+
 void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
 {
 
@@ -181,7 +206,7 @@ void RenderWindow(void)
     float ship_x = game_info.chinf[4].point.x;
     float ship_y = game_info.chinf[4].point.y;
 
-    RenderBackGround(gMainRenderer, BackGround, (int)(ship_x/10), (int)(ship_y/10));
+    RenderBackGround(gMainRenderer, BackGround, (int)(ship_x/40), (int)(ship_y/40));
 
     /*Uint8 r = (int)fabs(ship_x) % 255;
     Uint8 g = (int)fabs(ship_y) % 255;
@@ -216,6 +241,7 @@ void RenderWindow(void)
      *  ????????????1?????????
      */
     RenderDistance(gMainRenderer, font, ship_x, ship_y);
+    RenderOxgeLevel(gMainRenderer, font, game_info.oxy_amount, game_info.oxy_max);
     SDL_RenderPresent(gMainRenderer);
 }
 
