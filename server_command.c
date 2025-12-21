@@ -106,6 +106,8 @@ int CollisionInSpace(CharaInfo *ship, FloatPoint delta)
 
         if(distSq <= (rad_sum * rad_sum)){
             fprintf(stderr, "Collide! with Obstacle %d\n", i);
+            ship->hp--;
+            fprintf(stderr, "hp%d\n", ship->hp);
             return 0; // 衝突
         }
     }
@@ -450,6 +452,7 @@ void InitGameInfo(void)
     game_info.chinf[ID_SHIP].point.x = offset_x; 
     game_info.chinf[ID_SHIP].point.y = offset_y;
     game_info.chinf[ID_SHIP].r = SPACESHIP_SIZE/2;
+    game_info.chinf[ID_SHIP].hp = 5;
 
     // 酸素タスク初期化
     game_info.oxy_max = 30.0f;

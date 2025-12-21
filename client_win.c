@@ -181,6 +181,30 @@ void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float 
     SDL_FreeSurface(message);
 }
 
+void ShipHp(SDL_Renderer* renderer, TTF_Font* tex, int x)
+{
+    char buf[64];
+    snprintf(buf, sizeof(buf), "ShipHp: %d", x);
+
+    // 白色で描画
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface *message = TTF_RenderUTF8_Solid(font, buf, white);
+
+    SDL_Texture *textTex = SDL_CreateTextureFromSurface(renderer, message);
+
+    // 描画位置を上部中央に設定
+    SDL_Rect dst;
+    dst.w = message->w*2;
+    dst.h = message->h*2;
+    dst.x = MAX_WINDOW_X - message->w*2 - 10;
+    dst.y = 0;   // 上から少し下げる
+
+    SDL_RenderCopy(renderer, textTex, NULL, &dst);
+
+    SDL_DestroyTexture(textTex);
+    SDL_FreeSurface(message);
+}
+
 
 void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
 {
@@ -410,6 +434,7 @@ void RenderWindow(void)
             */
             RenderDistance(gMainRenderer, ship_world_x, ship_world_y);
             RenderOxgeLevel(gMainRenderer, font, game_info.oxy_amount, game_info.oxy_max);
+            ShipHp(gMainRenderer, font, game_info.chinf[ID_SHIP].hp);
             SDL_RenderPresent(gMainRenderer);
             break;
         }
