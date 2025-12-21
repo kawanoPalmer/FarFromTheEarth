@@ -160,7 +160,7 @@ void RenderDistance(SDL_Renderer* renderer, float x, float y)
 void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float max)
 {
     char buf[64];
-    snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)((amount/max)*100));
+    snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
 
     // 白色で描画
     SDL_Color white = {255, 255, 255, 255};
