@@ -18,24 +18,19 @@ static int obstacles_num = 0;
 static int obstacles_loaded = 0;
 int DistanceToGoal(float x, float y);
 
-void RecvInfo(GameInfo *info){
+int RecvInfo(GameInfo *info){
     game_info.stts = info->stts;
+    game_info.oxy_amount = info->oxy_amount;
+    game_info.oxy_max = info->oxy_max;
     for(int i=0; i<CHARA_NUM; i++){
     game_info.chinf[i] = info->chinf[i];
     if (i==4){
     fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
     }
     }
+    return game_info.stts;
 }
 
-int RecvStts(GameInfo *info)
-{
-    int endFlag = 1;
-    if(info->stts == GS_End)
-        endFlag = 0;
-
-    return endFlag;
-}
 
 void RenderTitle(SDL_Renderer* renderer)
 {
@@ -159,6 +154,7 @@ void RenderDistance(SDL_Renderer* renderer, float x, float y)
 
 void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float max)
 {
+    fprintf(stderr, "amount=%f max=%f\n", amount, max);
     char buf[64];
     snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
 

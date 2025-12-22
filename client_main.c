@@ -10,7 +10,7 @@ int main(int argc,char *argv[])
 {
     int		num;
     char	name[MAX_CLIENTS][MAX_NAME_SIZE];
-    int		endFlag=1;
+    int		endFlag = GS_Title;
     char	localHostName[]="localhost";
     char	*serverName;
     int		clientID;
@@ -45,10 +45,10 @@ int main(int argc,char *argv[])
       return -1;
   }
     /* メインイベントループ */
-    while(endFlag){
+    while(endFlag != GS_End){
       while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
-            endFlag = 0;
+            endFlag = GS_End;
         }
       }
       RenderWindow();

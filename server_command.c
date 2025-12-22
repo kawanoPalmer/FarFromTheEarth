@@ -181,7 +181,7 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
         if (cmd->act == 'B') {
             game_info.oxy_progress++;
             if (game_info.oxy_progress >= game_info.oxy_required) {
-                game_info.oxy_progress = game_info.oxy_max;
+                game_info.oxy_amount = game_info.oxy_max;
                 fprintf(stderr, "Oxygen Task Progress: %d\n", game_info.oxy_progress);
                 game_info.oxy_progress = 0;
                 fprintf(stderr, "Oxygen fully replenished!\n");
@@ -512,5 +512,5 @@ void InitGameInfo(void)
 
 void AfterPlayingRoop(void)
 {
-    game_info.stts = GS_End;	
+    game_info.stts = GS_Result;	
 }

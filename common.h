@@ -72,7 +72,8 @@ typedef enum {
     CS_Normal = 1, // 通常
     CS_Action = 2, // アクション
     CS_Alive  = 3,
-    CS_Damege = 4  // 被弾 (宇宙船被弾用)
+    CS_Dead   = 4,
+    CS_Damege = 5  // 被弾 (宇宙船被弾用)
 } CharaStts;
 
 typedef enum{

@@ -10,10 +10,12 @@ static Uint32 SignalHandler(Uint32 interval, void *param);
 extern void AfterPlayingRoop(void);
 static Uint32 CallAfter4Sec(Uint32 interval, void *param);
 
+int	endFlag;
+
 int main(int argc,char *argv[])
 {
 	int	num;
-	int	endFlag = 1;
+	endFlag = 1;
 
 	/* �����������å� */
 	if(argc != 2 && argc != 3){
@@ -51,7 +53,7 @@ int main(int argc,char *argv[])
 	};
 
 	AfterPlayingRoop();
-	SDL_AddTimer(4000, endFlag = CallAfter4Sec, NULL);
+	SDL_AddTimer(4000, CallAfter4Sec, NULL);
 
 	while(endFlag == GS_Result){
 		continue;
@@ -79,6 +81,7 @@ static Uint32 SignalHandler(Uint32 interval, void *param)
 
 static Uint32 CallAfter4Sec(Uint32 interval, void *param)
 {
+	endFlag = GS_End;
 	Ending();
     return 0;   // 0 を返すと「一度だけ実行」で終了
 }

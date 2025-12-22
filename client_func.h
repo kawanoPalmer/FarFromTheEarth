@@ -32,6 +32,6 @@ extern int ExecuteCommand(char command);
 extern void SendEndCommand(void);
 extern void Sendinfo(int pos);
 int RecvData(void *data,int dataSize);
-void RecvInfo(GameInfo *info);
-int RecvStts(GameInfo *info);
+int RecvInfo(GameInfo *info);
+
 #endif

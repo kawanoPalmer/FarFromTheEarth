@@ -107,8 +107,7 @@ int SendRecvManager(void)
 		/* �����С�����ǡ������Ϥ��Ƥ��� */
     	/* ���ޥ�ɤ��ɤ߹��� */
 		RecvData(&Info, sizeof(GameInfo));
-    RecvInfo(&Info);
-    endFlag = RecvStts(&Info);
+    endFlag = RecvInfo(&Info);
     	/* ���ޥ�ɤ��Ф��������Ԥ� */
 		//endFlag = ExecuteCommand(command);
     }//END_COMMAND��ä���EndFlag��Ω�ä�server_main.c�Υ��٥�ȥ롼�פ���λ���롣
