@@ -65,7 +65,7 @@ int ColorDecision(SDL_Surface *surface, int x, int y){
     if (r == 255 && g == 0 && b == 0) {
         // 赤
         return  IT_MoveR;
-    } else if (r == 85 && g == 255 && b == 0) {
+    } else if (r == 0 && g == 255 && b == 0) {
         // 緑
         return IT_AttackUpper;
     } else if (r == 0 && g == 85 && b == 255) {
@@ -556,7 +556,7 @@ void InitGameInfo(void)
         game_info.bullets[i].active = 0;
     }
 
-    SDL_Surface* src = IMG_Load("materials_win/spaceship_proto2_mask.png");
+    SDL_Surface* src = IMG_Load("materials_win/spaceship_mask.png");
     mask = SDL_CreateRGBSurface(
         0, 500, 500,
         src->format->BitsPerPixel,
