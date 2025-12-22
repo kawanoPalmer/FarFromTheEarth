@@ -45,6 +45,10 @@
 #define GOAL_POSITION_R 500
 #define OXY_DEPLETION 0.008333f
 
+#define MAX_BULLETS 20      // 画面に出せる弾の最大数
+#define BULLET_SPEED 15.0f  // 弾の速さ
+#define BULLET_R 5          // 弾の半径
+
 typedef enum {
     IT_MoveL = 0,
     IT_MoveR = 1,
@@ -72,7 +76,8 @@ typedef enum {
     CS_Normal = 1, // 通常
     CS_Action = 2, // アクション
     CS_Alive  = 3,
-    CS_Damege = 4  // 被弾 (宇宙船被弾用)
+    CS_Damege = 4,  // 被弾 (宇宙船被弾用)
+    CS_Dead = 5
 } CharaStts;
 
 typedef enum{
@@ -106,6 +111,14 @@ typedef struct {
     SDL_bool right;//右
 }Direction;
 
+// 弾丸1つ分の情報
+typedef struct {
+    FloatPoint point; // 位置
+    FloatPoint vec;   // 飛んでいく方向ベクトル
+    int active;       // 1なら飛んでいる、0なら未使用
+} BulletInfo;
+
+
 /* キャラクターの情報 */
 typedef struct {
     int client_id;
@@ -126,6 +139,7 @@ typedef struct {
 typedef struct {
     GameStts stts;
     CharaInfo chinf[CHARA_NUM];
+    BulletInfo bullets[MAX_BULLETS];
     float oxy_amount; // 現在の酸素量
     float oxy_max; // 最大の酸素量
     int oxy_progress;// 現在の進捗
