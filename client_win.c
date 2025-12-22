@@ -28,6 +28,11 @@ int RecvInfo(GameInfo *info){
     fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
     }
     }
+
+    for(int i=0; i<MAX_BULLETS; i++){
+        game_info.bullets[i] = info->bullets[i];
+    }
+
     return game_info.stts;
 }
 
@@ -262,6 +267,27 @@ void RenderObstacles(SDL_Renderer* renderer, SDL_Texture* tex, float ship_x, flo
 
 }
 
+void RenderBullets(SDL_Renderer* renderer, float ship_x, float ship_y)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // 黄色
+
+    for(int i=0; i<MAX_BULLETS; i++){
+        if(game_info.bullets[i].active == 0) continue;
+
+        // 世界座標 -> スクリーン座標変換
+        int sx, sy;
+        WorldToScreen(game_info.bullets[i].point.x, game_info.bullets[i].point.y, ship_x, ship_y, &sx, &sy);
+
+        SDL_Rect r;
+        r.w = BULLET_R * 2;
+        r.h = BULLET_R * 2;
+        r.x = sx - BULLET_R;
+        r.y = sy - BULLET_R;
+
+        SDL_RenderFillRect(renderer, &r);
+    }
+}
+
 
 
 /* ???????????????????
@@ -421,6 +447,7 @@ void RenderWindow(void)
                 }
                 else {
                     if (game_info.chinf[i].type == CT_Enemy) {
+                        if (game_info.chinf[i].stts != CS_Alive) continue;
                     RenderRelativeChara(gMainRenderer, &game_info.chinf[i], enemy, ship_world_x, ship_world_y);
                     }
                 }
@@ -431,6 +458,7 @@ void RenderWindow(void)
             RenderDistance(gMainRenderer, ship_world_x, ship_world_y);
             RenderOxgeLevel(gMainRenderer, font, game_info.oxy_amount, game_info.oxy_max);
             ShipHp(gMainRenderer, font, game_info.chinf[ID_SHIP].hp);
+            RenderBullets(gMainRenderer, ship_world_x, ship_world_y);
             SDL_RenderPresent(gMainRenderer);
             break;
         }

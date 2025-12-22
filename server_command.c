@@ -114,6 +114,34 @@ int CollisionInSpace(CharaInfo *ship, FloatPoint delta)
             return 0; // 衝突
         }
     }
+
+    for (int i = 0; i < MAX_ENEMY; i++) {
+        int id = ENEMY_ID + i;
+        CharaInfo *enemy = &game_info.chinf[id];
+
+        if (enemy->stts != CS_Alive) continue;
+
+        float enemy_r = enemy->w / 2.0f;
+        float rad_sum = ship->r + enemy_r;
+        float rad_sum_sq = rad_sum * rad_sum;
+
+        // 未来の距離
+        float dx_future = enemy->point.x - future_ship_x;
+        float dy_future = enemy->point.y - future_ship_y;
+        float distSq_future = dx_future * dx_future + dy_future * dy_future;
+
+        if (distSq_future <= rad_sum_sq) {
+            
+            // 現在の距離
+            float dx_current = enemy->point.x - ship->point.x;
+            float dy_current = enemy->point.y - ship->point.y;
+            float distSq_current = dx_current * dx_current + dy_current * dy_current;
+
+            if (distSq_future < distSq_current) {
+                return 0; 
+            }
+        }
+    }
     
     float rad_sum_goal = ship->r + GOAL_POSITION_R;
     float dx_G = GOAL_POSITION_X - future_ship_x;
@@ -181,7 +209,7 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
         if (cmd->act == 'B') {
             game_info.oxy_progress++;
             if (game_info.oxy_progress >= game_info.oxy_required) {
-                game_info.oxy_amount = game_info.oxy_max;
+                game_info.oxy_amount= game_info.oxy_max;
                 fprintf(stderr, "Oxygen Task Progress: %d\n", game_info.oxy_progress);
                 game_info.oxy_progress = 0;
                 fprintf(stderr, "Oxygen fully replenished!\n");
@@ -190,14 +218,27 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
         break;
             
         case IT_AttackUpper:
-        if (cmd->act == 'B' && cooldown == 0) {
-
-        }   
-             break;
         case IT_AttackLower:
-        if (cmd->act == 'B' && cooldown == 0) {
-            
-        }
+       if (cmd->act == 'B' && cooldown == 0 && stick_len > 0.1f) {
+                for(int i=0; i<MAX_BULLETS; i++){
+                    if(game_info.bullets[i].active == 0){
+                        // 発射設定
+                        game_info.bullets[i].active = 1;
+                        
+                        //game_info.bullets[i].point = ch->point; 
+                        game_info.bullets[i].point = game_info.chinf[ID_SHIP].point;
+
+                        // 方向ベクトルを正規化（長さを1にする）してスピードを掛ける
+                        game_info.bullets[i].vec.x = (stick_vec.x / stick_len) * BULLET_SPEED;
+                        game_info.bullets[i].vec.y = (stick_vec.y / stick_len) * BULLET_SPEED;
+                        
+                        cooldown = 10;
+                        fprintf(stderr, "Shot fired! ID:%d\n", i);
+                        break;
+                    }
+                }
+            }
+            break;
              
         default:
             break;
@@ -309,12 +350,59 @@ void UpdateEnemy(void)
 
         if (fabsf(dx) < HALF_WIDTH && fabsf(dy) < HALF_HEIGHT) {
             float dist = sqrtf(dx * dx + dy * dy);
-            if (dist > 1.0f) {
+            float stop_dist = ship->r + (enemy->w / 2.0f);
+            if (dist > stop_dist) {
             float move_x = (dx / dist) * ENEMY_SPEED;
             float move_y = (dy / dist) * ENEMY_SPEED;
 
             enemy->point.x += move_x;
             enemy->point.y += move_y;
+            }
+            else {
+                if (rand() % 20 == 0) {
+                    ship->hp -= 1;
+                    fprintf(stderr, "Hit! Ship HP: %d\n", ship->hp);
+
+                    if (ship->hp <= 0) {
+                        game_info.stts = GS_End;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void UpdateBullets(void)
+{
+    for(int i=0; i<MAX_BULLETS; i++){
+        // 使っていない弾は無視
+        if(game_info.bullets[i].active == 0) continue;
+
+        game_info.bullets[i].point.x += game_info.bullets[i].vec.x;
+        game_info.bullets[i].point.y += game_info.bullets[i].vec.y;
+
+        if(game_info.bullets[i].point.x < -2000 || game_info.bullets[i].point.x > 2000 ||
+           game_info.bullets[i].point.y < -2000 || game_info.bullets[i].point.y > 2000){
+            game_info.bullets[i].active = 0;
+            continue;
+        }
+
+        // 敵との当たり判定
+        for(int j=0; j<MAX_ENEMY; j++){
+            int eid = ENEMY_ID + j;
+            CharaInfo *enemy = &game_info.chinf[eid];
+
+            if(enemy->stts != CS_Alive) continue;
+
+            float dx = game_info.bullets[i].point.x - enemy->point.x;
+            float dy = game_info.bullets[i].point.y - enemy->point.y;
+            float dist = sqrtf(dx*dx + dy*dy);
+
+            // 敵のサイズ(w/2) + 弾のサイズ
+            if(dist < (enemy->w/2 + BULLET_R)){
+                enemy->stts = CS_Dead;         // 敵を倒す
+                game_info.bullets[i].active = 0; // 弾も消える
+                break; 
             }
         }
     }
@@ -425,14 +513,14 @@ void InitGameInfo(void)
         game_info.chinf[i].h       = 30;
     }
 
-    // 敵の初期化
+    /* 敵の初期化*/
     for (int i = 0; i < MAX_ENEMY; i++) {
         int id = ENEMY_ID + i;
         game_info.chinf[id].type = CT_Enemy;
         game_info.chinf[id].stts = CS_Alive;
 
-        /*game_info.chinf[id].point.x = (rand() % 2000) - 1000;
-        game_info.chinf[id].point.y = (rand() % 2000) - 1000;*/
+        //game_info.chinf[id].point.x = (rand() % 2000) - 1000;
+        //game_info.chinf[id].point.y = (rand() % 2000) - 1000;
         game_info.chinf[id].w = 40;
         game_info.chinf[id].h = 40;
         float x, y, dist;
@@ -462,6 +550,11 @@ void InitGameInfo(void)
     game_info.oxy_amount = game_info.oxy_max;
     game_info.oxy_progress = 0;
     game_info.oxy_required = 50;
+
+    // 弾の初期化
+    for(int i=0; i<MAX_BULLETS; i++){
+        game_info.bullets[i].active = 0;
+    }
 
     SDL_Surface* src = IMG_Load("materials_win/spaceship_proto2_mask.png");
     mask = SDL_CreateRGBSurface(

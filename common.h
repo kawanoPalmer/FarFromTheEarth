@@ -29,13 +29,13 @@
 
 #define SPACESHIP_SIZE 500
 
-#define MAX_ENEMY 20
+#define MAX_ENEMY 10
 #define ENEMY_ID 6
 #define ENEMY_SPEED 2.0f
 #define ENEMY_RANGE 1000.0f
 
 #define SPAWN_RANGE 3800     // 出現エリアの広さ 
-#define SAFE_RADIUS 1000.0f   // 安全地帯の半径
+#define SAFE_RADIUS 1200.0f   // 安全地帯の半径
 
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 4.0f
@@ -44,6 +44,10 @@
 #define GOAL_POSITION_Y 5000
 #define GOAL_POSITION_R 500
 #define OXY_DEPLETION 0.008333f
+
+#define MAX_BULLETS 20      // 画面に出せる弾の最大数
+#define BULLET_SPEED 15.0f  // 弾の速さ
+#define BULLET_R 5          // 弾の半径
 
 typedef enum {
     IT_MoveL = 0,
@@ -72,8 +76,8 @@ typedef enum {
     CS_Normal = 1, // 通常
     CS_Action = 2, // アクション
     CS_Alive  = 3,
-    CS_Dead   = 4,
-    CS_Damege = 5  // 被弾 (宇宙船被弾用)
+    CS_Damege = 4,  // 被弾 (宇宙船被弾用)
+    CS_Dead = 5
 } CharaStts;
 
 typedef enum{
@@ -107,6 +111,14 @@ typedef struct {
     SDL_bool right;//右
 }Direction;
 
+// 弾丸1つ分の情報
+typedef struct {
+    FloatPoint point; // 位置
+    FloatPoint vec;   // 飛んでいく方向ベクトル
+    int active;       // 1なら飛んでいる、0なら未使用
+} BulletInfo;
+
+
 /* キャラクターの情報 */
 typedef struct {
     int client_id;
@@ -127,6 +139,7 @@ typedef struct {
 typedef struct {
     GameStts stts;
     CharaInfo chinf[CHARA_NUM];
+    BulletInfo bullets[MAX_BULLETS];
     float oxy_amount; // 現在の酸素量
     float oxy_max; // 最大の酸素量
     int oxy_progress;// 現在の進捗
