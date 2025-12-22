@@ -29,13 +29,13 @@
 
 #define SPACESHIP_SIZE 500
 
-#define MAX_ENEMY 20
+#define MAX_ENEMY 10
 #define ENEMY_ID 6
 #define ENEMY_SPEED 2.0f
 #define ENEMY_RANGE 1000.0f
 
 #define SPAWN_RANGE 3800     // 出現エリアの広さ 
-#define SAFE_RADIUS 1000.0f   // 安全地帯の半径
+#define SAFE_RADIUS 1200.0f   // 安全地帯の半径
 
 #define ID_SHIP 4
 #define SHIP_BASE_SPEED 4.0f

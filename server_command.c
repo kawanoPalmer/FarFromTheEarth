@@ -114,6 +114,34 @@ int CollisionInSpace(CharaInfo *ship, FloatPoint delta)
             return 0; // 衝突
         }
     }
+
+    for (int i = 0; i < MAX_ENEMY; i++) {
+        int id = ENEMY_ID + i;
+        CharaInfo *enemy = &game_info.chinf[id];
+
+        if (enemy->stts != CS_Alive) continue;
+
+        float enemy_r = enemy->w / 2.0f;
+        float rad_sum = ship->r + enemy_r;
+        float rad_sum_sq = rad_sum * rad_sum;
+
+        // 未来の距離
+        float dx_future = enemy->point.x - future_ship_x;
+        float dy_future = enemy->point.y - future_ship_y;
+        float distSq_future = dx_future * dx_future + dy_future * dy_future;
+
+        if (distSq_future <= rad_sum_sq) {
+            
+            // 現在の距離
+            float dx_current = enemy->point.x - ship->point.x;
+            float dy_current = enemy->point.y - ship->point.y;
+            float distSq_current = dx_current * dx_current + dy_current * dy_current;
+
+            if (distSq_future < distSq_current) {
+                return 0; 
+            }
+        }
+    }
     
     float rad_sum_goal = ship->r + GOAL_POSITION_R;
     float dx_G = GOAL_POSITION_X - future_ship_x;
@@ -181,7 +209,7 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
         if (cmd->act == 'B') {
             game_info.oxy_progress++;
             if (game_info.oxy_progress >= game_info.oxy_required) {
-                game_info.oxy_progress = game_info.oxy_max;
+                game_info.oxy_amount= game_info.oxy_max;
                 fprintf(stderr, "Oxygen Task Progress: %d\n", game_info.oxy_progress);
                 game_info.oxy_progress = 0;
                 fprintf(stderr, "Oxygen fully replenished!\n");
@@ -309,12 +337,23 @@ void UpdateEnemy(void)
 
         if (fabsf(dx) < HALF_WIDTH && fabsf(dy) < HALF_HEIGHT) {
             float dist = sqrtf(dx * dx + dy * dy);
-            if (dist > 1.0f) {
+            float stop_dist = ship->r + (enemy->w / 2.0f);
+            if (dist > stop_dist) {
             float move_x = (dx / dist) * ENEMY_SPEED;
             float move_y = (dy / dist) * ENEMY_SPEED;
 
             enemy->point.x += move_x;
             enemy->point.y += move_y;
+            }
+            else {
+                if (rand() % 20 == 0) {
+                    ship->hp -= 1;
+                    fprintf(stderr, "Hit! Ship HP: %d\n", ship->hp);
+
+                    if (ship->hp <= 0) {
+                        game_info.stts = GS_End;
+                    }
+                }
             }
         }
     }
@@ -425,14 +464,14 @@ void InitGameInfo(void)
         game_info.chinf[i].h       = 30;
     }
 
-    // 敵の初期化
+    /* 敵の初期化*/
     for (int i = 0; i < MAX_ENEMY; i++) {
         int id = ENEMY_ID + i;
         game_info.chinf[id].type = CT_Enemy;
         game_info.chinf[id].stts = CS_Alive;
 
-        /*game_info.chinf[id].point.x = (rand() % 2000) - 1000;
-        game_info.chinf[id].point.y = (rand() % 2000) - 1000;*/
+        //game_info.chinf[id].point.x = (rand() % 2000) - 1000;
+        //game_info.chinf[id].point.y = (rand() % 2000) - 1000;
         game_info.chinf[id].w = 40;
         game_info.chinf[id].h = 40;
         float x, y, dist;
