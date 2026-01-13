@@ -162,7 +162,7 @@ void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float 
 {
     //fprintf(stderr, "amount=%f max=%f\n", amount, max);
     char buf[64];
-    //snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
+    snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
 
     // 白色で描画
     SDL_Color white = {255, 255, 255, 255};
