@@ -422,10 +422,13 @@ void BroadcastGameInfo(void)
 
 void InteractManeger(const ClientCommand *cmd)
 {
+    CharaInfo *ch = &game_info.chinf[cmd->client_id];
+    int Color = ColorDecision(mask, ch->point.x+cmd->dir.x*cmd->velocity, ch->point.y+cmd->dir.y * cmd->velocity);
     switch (cmd->act)
     {
     case 'X':
-        game_info.chinf[cmd->client_id].stts = CS_Action;
+        if(Color != FT_Passable && Color != FT_Unpassible)
+            game_info.chinf[cmd->client_id].stts = CS_Action;
         break;
     case 'A':
         game_info.chinf[cmd->client_id].stts = CS_Normal;
