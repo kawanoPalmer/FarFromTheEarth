@@ -216,25 +216,65 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
             }
         }
         break;
-            
-        case IT_AttackUpper:
-        case IT_AttackLower:
-       if (cmd->act == 'B' && cooldown == 0 && stick_len > 0.1f) {
+
+        case IT_AttackUpper: // Y軸
+        if (cmd->act == 'B' && cooldown == 0 && stick_len > 0.1f) {
+
+            // XとYの「倒している量（絶対値）」を比較
+            float abs_x = fabsf(stick_vec.x);
+            float abs_y = fabsf(stick_vec.y);
+
+            if (abs_y > abs_x) {
                 for(int i=0; i<MAX_BULLETS; i++){
                     if(game_info.bullets[i].active == 0){
                         // 発射設定
                         game_info.bullets[i].active = 1;
-                        
                         //game_info.bullets[i].point = ch->point; 
                         game_info.bullets[i].point = game_info.chinf[ID_SHIP].point;
+                        game_info.bullets[i].vec.x = 0.0f;
 
                         // 方向ベクトルを正規化（長さを1にする）してスピードを掛ける
-                        game_info.bullets[i].vec.x = (stick_vec.x / stick_len) * BULLET_SPEED;
-                        game_info.bullets[i].vec.y = (stick_vec.y / stick_len) * BULLET_SPEED;
+                        if (stick_vec.y > 0) {
+                        game_info.bullets[i].vec.y = BULLET_SPEED;
+                        } else {
+                        game_info.bullets[i].vec.y = -BULLET_SPEED;
+                        }
                         
                         cooldown = 10;
                         fprintf(stderr, "Shot fired! ID:%d\n", i);
                         break;
+                        }
+                    }
+                }
+            }
+            break;
+
+        case IT_AttackLower: // X軸
+       if (cmd->act == 'B' && cooldown == 0 && stick_len > 0.1f) {
+
+        float abs_x = fabsf(stick_vec.x);
+        float abs_y = fabsf(stick_vec.y);
+
+        if (abs_x > abs_y) {
+                for(int i=0; i<MAX_BULLETS; i++){
+                    if(game_info.bullets[i].active == 0){
+                        // 発射設定
+                        game_info.bullets[i].active = 1;
+                        //game_info.bullets[i].point = ch->point; 
+                        game_info.bullets[i].point = game_info.chinf[ID_SHIP].point;
+                        game_info.bullets[i].vec.y = 0.0f;
+
+                        // 方向ベクトルを正規化（長さを1にする）してスピードを掛ける
+                        if (stick_vec.x > 0) {
+                        game_info.bullets[i].vec.x = BULLET_SPEED;
+                        } else {
+                        game_info.bullets[i].vec.x =  -BULLET_SPEED;
+                        }
+                        
+                        cooldown = 10;
+                        fprintf(stderr, "Shot fired! ID:%d\n", i);
+                        break;
+                        }
                     }
                 }
             }
@@ -381,8 +421,8 @@ void UpdateBullets(void)
         game_info.bullets[i].point.x += game_info.bullets[i].vec.x;
         game_info.bullets[i].point.y += game_info.bullets[i].vec.y;
 
-        if(game_info.bullets[i].point.x < -2000 || game_info.bullets[i].point.x > 2000 ||
-           game_info.bullets[i].point.y < -2000 || game_info.bullets[i].point.y > 2000){
+        if(game_info.bullets[i].point.x < -5000 || game_info.bullets[i].point.x > 5000 ||
+           game_info.bullets[i].point.y < -5000 || game_info.bullets[i].point.y > 5000){
             game_info.bullets[i].active = 0;
             continue;
         }
