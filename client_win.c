@@ -25,8 +25,9 @@ int RecvInfo(GameInfo *info){
     for(int i=0; i<CHARA_NUM; i++){
     game_info.chinf[i] = info->chinf[i];
     if (i==4){
-    fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
+    //fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
     }
+        fprintf(stderr, "interact=%d\n", info->chinf->act);
     }
 
     for(int i=0; i<MAX_BULLETS; i++){
@@ -159,9 +160,9 @@ void RenderDistance(SDL_Renderer* renderer, float x, float y)
 
 void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float max)
 {
-    fprintf(stderr, "amount=%f max=%f\n", amount, max);
+    //fprintf(stderr, "amount=%f max=%f\n", amount, max);
     char buf[64];
-    snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
+    //snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
 
     // 白色で描画
     SDL_Color white = {255, 255, 255, 255};
