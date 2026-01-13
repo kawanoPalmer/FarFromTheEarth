@@ -29,7 +29,7 @@
 
 #define SPACESHIP_SIZE 500
 
-#define MAX_ENEMY 10
+#define MAX_ENEMY 20
 #define ENEMY_ID 6
 #define ENEMY_SPEED 2.0f
 #define ENEMY_RANGE 1000.0f
