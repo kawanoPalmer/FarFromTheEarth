@@ -65,7 +65,7 @@ int ColorDecision(SDL_Surface *surface, int x, int y){
     if (r == 255 && g == 0 && b == 0) {
         // 赤
         return  IT_MoveR;
-    } else if (r == 0 && g == 255 && b == 0) {
+    } else if (r == 45 && g == 173 && b == 49) {
         // 緑
         return IT_AttackUpper;
     } else if (r == 0 && g == 85 && b == 255) {
