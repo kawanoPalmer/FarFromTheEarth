@@ -124,7 +124,7 @@ typedef struct {
     int client_id;
     CharaType type;   //キャラタイプ
     CharaStts stts;   //キャラの状態（基本は通常）
-    ActionType act;
+    InteractType act;
     float basevel;    /* 速度の大きさの基準値 */
     float velocity;   /* 現在の速度の大きさ */
     FloatPoint dir;   /* 現在の方向（大きさ最大1となる成分） */

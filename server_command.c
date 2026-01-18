@@ -161,6 +161,7 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
 {
     int Interaction = ColorDecision(mask, ch->point.x, ch->point.y);
     fprintf(stderr, "Your Interact: %d\n", Interaction);
+    ch->act = Interaction;
 
     CharaInfo *ship = &game_info.chinf[ID_SHIP];
     //クライアントから送られてきたスティックの方向ベクトルを取得
@@ -310,7 +311,7 @@ int UnpackClientCommand(const unsigned char *buf, int size, ClientCommand *cmd)
     int32_t act_bits;
     memcpy(&act_bits, buf + offset, sizeof(act_bits));
     act_bits = ntohl(act_bits);
-    cmd->act = (ActionType)act_bits;
+    cmd->act = (InteractType)act_bits;
     offset += sizeof(act_bits);
 
     uint32_t x_bits;

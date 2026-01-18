@@ -31,8 +31,9 @@ int RecvInfo(GameInfo *info){
     for(int i=0; i<CHARA_NUM; i++){
     game_info.chinf[i] = info->chinf[i];
     if (i==4){
-    fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
+    //fprintf(stderr, "%f, %f\n%d\n", game_info.chinf[i].point.x, game_info.chinf[i].point.y, i);
     }
+        fprintf(stderr, "interact=%d\n", info->chinf->act);
     }
 
     for(int i=0; i<MAX_BULLETS; i++){
