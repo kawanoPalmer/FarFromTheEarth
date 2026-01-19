@@ -21,6 +21,10 @@ Uint32 lastTick;
 Uint32 blinkTick;
 SDL_bool blinkRed = SDL_FALSE;
 
+const GameInfo* GetGameInfo(void)
+{
+    return &game_info;
+}
 
 int DistanceToGoal(float x, float y);
 

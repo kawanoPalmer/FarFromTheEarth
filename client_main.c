@@ -37,6 +37,11 @@ int main(int argc,char *argv[])
 		fprintf(stderr,"setup failed : InitWindows\n");
 		return -1;
 	}
+  /*サウンドの初期化*/
+  if(InitSound() != 0){
+		fprintf(stderr,"setup failed : InitSound\n");
+		return -1;
+	}
 
     /*ジョイコンオープン*/
   joycon_err err = joycon_open(&jc, JOYCON_R);
@@ -51,6 +56,7 @@ int main(int argc,char *argv[])
             endFlag = GS_End;
         }
       }
+      Sound_Update();
       RenderWindow();
       SendClientCommand(clientID);
       endFlag = SendRecvManager();
@@ -59,6 +65,7 @@ int main(int argc,char *argv[])
     /* 終了処理 */
     joycon_close(&jc);   // Joy-Con解放
     DestroyWindow();     // SDLウィンドウ破棄
+    Sound_Quit();        // sound破棄
     CloseSoc();          // ソケット切断
     TTF_Quit();          // SDL_ttf終了
     IMG_Quit();          // SDL_image終了

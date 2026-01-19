@@ -34,4 +34,10 @@ extern void Sendinfo(int pos);
 int RecvData(void *data,int dataSize);
 int RecvInfo(GameInfo *info);
 
+/*client_sound.c*/
+int InitSound(void);
+void Sound_Update(void);
+void Sound_Quit(void);
+const GameInfo* GetGameInfo(void);
+
 #endif
