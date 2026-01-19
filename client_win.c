@@ -327,7 +327,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[2] = IMG_LoadTexture(gMainRenderer, "materials_win/player3.png");
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
     spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship.png");
-    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
+    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground1.png"); 
     ObstaclesTex = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle.png");
     GoalOBJTex = IMG_LoadTexture(gMainRenderer, "materials_win/goal.png");
 
