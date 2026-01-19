@@ -214,12 +214,17 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
         
         case IT_TaskOxy:
         if (cmd->act == 'B') {
-            game_info.oxy_progress++;
+            /*game_info.oxy_progress++;
             if (game_info.oxy_progress >= game_info.oxy_required) {
                 game_info.oxy_amount= game_info.oxy_max;
                 fprintf(stderr, "Oxygen Task Progress: %d\n", game_info.oxy_progress);
                 game_info.oxy_progress = 0;
                 fprintf(stderr, "Oxygen fully replenished!\n");
+            }*/
+            const float Recovery_Speed = 0.5f;
+            game_info.oxy_amount += Recovery_Speed;
+            if (game_info.oxy_amount > game_info.oxy_max) {
+            game_info.oxy_amount = game_info.oxy_max;
             }
         }
         break;

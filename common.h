@@ -43,7 +43,7 @@
 #define GOAL_POSITION_X 5000
 #define GOAL_POSITION_Y 5000
 #define GOAL_POSITION_R 500
-#define OXY_DEPLETION 0.008333f
+#define OXY_DEPLETION 0.005f
 
 #define MAX_BULLETS 20      // 画面に出せる弾の最大数
 #define BULLET_SPEED 15.0f  // 弾の速さ
