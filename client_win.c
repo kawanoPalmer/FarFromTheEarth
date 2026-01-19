@@ -143,6 +143,36 @@ void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
     SDL_RenderCopy(renderer, tex, NULL, &dst);
 }
 
+void RenderBar(
+    SDL_Renderer* renderer,
+    int x, int y,           // 左上座標
+    int w, int h,           // バー全体サイズ
+    float value, float max, // 現在値 / 最大値
+    SDL_Color bg,           // 背景色
+    SDL_Color fg            // バー色
+)
+{
+    // 背景
+    SDL_Rect back = { x, y, w, h };
+    SDL_SetRenderDrawColor(renderer, bg.r, bg.g, bg.b, bg.a);
+    SDL_RenderFillRect(renderer, &back);
+
+    // 割合計算
+    float ratio = value / max;
+    if (ratio < 0) ratio = 0;
+    if (ratio > 1) ratio = 1;
+
+    // 前景バー
+    SDL_Rect front = { x, y, (int)(w * ratio), h };
+    SDL_SetRenderDrawColor(renderer, fg.r, fg.g, fg.b, fg.a);
+    SDL_RenderFillRect(renderer, &front);
+
+    // 枠線（任意）
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawRect(renderer, &back);
+}
+
+
 void RenderDistance(SDL_Renderer* renderer, float x, float y)
 {
     int distance = DistanceToGoal(x, y);
@@ -163,6 +193,32 @@ void RenderDistance(SDL_Renderer* renderer, float x, float y)
     dst.y = 700;   // 上から少し下げる
 
     SDL_RenderCopy(renderer, textTex, NULL, &dst);
+
+
+    // ===== 酸素バー =====
+SDL_Color bg = {40, 40, 40, 255};
+SDL_Color oxy;
+
+float oxy_ratio = game_info.oxy_amount / game_info.oxy_max;
+
+// 残量で色を変える（ゲーム感UP）
+if (oxy_ratio > 0.5f)
+    oxy = (SDL_Color){100, 200, 255, 255};   // 青
+else if (oxy_ratio > 0.25f)
+    oxy = (SDL_Color){255, 200, 0, 255};     // 黄
+else
+    oxy = (SDL_Color){255, 50, 50, 255};     // 赤
+
+RenderBar(
+    gMainRenderer,
+    20, 20,          // 左上
+    300, 20,         // 幅・高さ
+    game_info.oxy_amount,
+    game_info.oxy_max,
+    bg,
+    oxy
+);
+
 
     SDL_DestroyTexture(textTex);
     SDL_FreeSurface(msg_distance);
@@ -234,6 +290,28 @@ void ShipHp(SDL_Renderer* renderer, TTF_Font* tex, int x)
     dst.h = message->h*2;
     dst.x = MAX_WINDOW_X - message->w*2 - 10;
     dst.y = 0;   // 上から少し下げる
+
+// ===== HPバー =====
+SDL_Color hp_col;
+SDL_Color bg = {40, 40, 40, 255};
+float hp_ratio = game_info.chinf[ID_SHIP].hp / 1000.0f;
+
+if (hp_ratio > 0.5f)
+    hp_col = (SDL_Color){0, 255, 0, 255};
+else if (hp_ratio > 0.2f)
+    hp_col = (SDL_Color){255, 180, 0, 255};
+else
+    hp_col = (SDL_Color){255, 0, 0, 255};
+
+RenderBar(
+    gMainRenderer,
+    MAX_WINDOW_X - 320, 20, // 右上
+    300, 20,
+    game_info.chinf[ID_SHIP].hp,
+    1000.0f,
+    bg,
+    hp_col
+);
 
     SDL_RenderCopy(renderer, textTex, NULL, &dst);
 
