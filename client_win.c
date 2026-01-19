@@ -396,7 +396,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     }
     fclose(fp);
 
-    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground.png"); 
+    BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
     enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy_sample.png");
     return 0;
 }
