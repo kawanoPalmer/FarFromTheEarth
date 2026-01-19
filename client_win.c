@@ -16,6 +16,12 @@ static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
 
 static int obstacles_num = 0;
 static int obstacles_loaded = 0;
+
+Uint32 lastTick;
+Uint32 blinkTick;
+SDL_bool blinkRed = SDL_FALSE;
+
+
 int DistanceToGoal(float x, float y);
 
 int RecvInfo(GameInfo *info){
@@ -160,15 +166,32 @@ void RenderDistance(SDL_Renderer* renderer, float x, float y)
 
 void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float max)
 {
-    //fprintf(stderr, "amount=%f max=%f\n", amount, max);
-    char buf[64];
-    snprintf(buf, sizeof(buf), "酸素量: %d%%", (int)(amount*100/max));
+    fprintf(stderr, "amount=%f max=%f\n", amount, max);
+    char buf1[64], buf2[128];
+    Uint32 now = SDL_GetTicks();
 
-    // 白色で描画
+    snprintf(buf1, sizeof(buf1), "酸素量: %d%%", (int)(amount*100/max));
+    snprintf(buf2, sizeof(buf2), "///まもなく酸素が枯渇する! 早急に供給を開始せよ!///");
+
+    if (now - blinkTick >= 300) {
+        blinkTick = now;
+        blinkRed = !blinkRed;
+    }
+
+
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Surface *message = TTF_RenderUTF8_Solid(font, buf, white);
+    SDL_Color red = {255, 50, 50, 255};
 
+    SDL_Surface *message = TTF_RenderUTF8_Solid(font, buf1, white);
     SDL_Texture *textTex = SDL_CreateTextureFromSurface(renderer, message);
+    SDL_Surface *alartmsg;
+
+    if(blinkRed)
+        alartmsg = TTF_RenderUTF8_Solid(font, buf2, red);
+    else
+        alartmsg = TTF_RenderUTF8_Solid(font, buf2, white);
+
+    SDL_Texture *textTex2 = SDL_CreateTextureFromSurface(renderer, alartmsg);
 
     // 描画位置を上部中央に設定
     SDL_Rect dst;
@@ -176,8 +199,15 @@ void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float 
     dst.h = message->h*2;
     dst.x = 10;
     dst.y = 40;   // 上から少し下げる
-
     SDL_RenderCopy(renderer, textTex, NULL, &dst);
+
+    if((int)(amount*100/max) < 50){
+        dst.w = alartmsg->w;
+        dst.h = alartmsg->h;
+        dst.x = MAX_WINDOW_X/2 - alartmsg->w/2;
+        dst.y = 120;
+        SDL_RenderCopy(renderer, textTex2, NULL, &dst);
+    }
 
     SDL_DestroyTexture(textTex);
     SDL_FreeSurface(message);
