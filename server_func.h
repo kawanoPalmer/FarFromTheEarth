@@ -9,6 +9,7 @@ int ProcessClientData(const unsigned char *data, int dataSize);
 void UpdateCharaPosition(const ClientCommand *cmd);
 void UpdateOxygen(void);
 void UpdateEnemy(void);
+void UpdateSdhipOperate(void);
 void UpdateBullets(void);
 void BroadcastGameInfo(void);
 void InitGameInfo(void);

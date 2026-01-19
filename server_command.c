@@ -164,45 +164,45 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
     ch->act = Interaction;
 
     CharaInfo *ship = &game_info.chinf[ID_SHIP];
+
+    const float accel = 0.5f;
+    const float Brake = 5.0f;
     //クライアントから送られてきたスティックの方向ベクトルを取得
     FloatPoint stick_vec = cmd->dir;
     float stick_len = sqrtf(stick_vec.x * stick_vec.x + stick_vec.y * stick_vec.y);
 
-    // スティックが傾けられていない場合は処理をスキップ 
-    //if (stick_len < 0.1f) return; 
-
-    // 船の速度 = 基本速度 * クライアントから送られてきた速度（現在は1.0f固定）
-    float actual_speed = SHIP_BASE_SPEED * cmd->velocity;
-
     static int cooldown = 0;
     if (cooldown > 0) cooldown--;
-
-    FloatPoint delta;
-    delta.x = stick_vec.x * actual_speed;
-    delta.y = stick_vec.y * actual_speed;
-
-    FloatPoint checkDelta;
 
     switch (Interaction) {
         //IT_MoveR: 左右操作 赤
         case IT_MoveR: 
-            checkDelta.x = delta.x;
-            checkDelta.y = 0.0f; // Y方向の移動はないものとして判定する
 
-            if (stick_len > 0.1f && CollisionInSpace(ship, checkDelta)){
-                ship->point.x += delta.x;
-                fprintf(stderr, "[Ship] Move X: %.1f\n", ship->point.x);
+            if (stick_len > 0.1f) {
+                float dir_x = stick_vec.x / stick_len;
+                if (fabsf(dir_x) > 0.5) {
+                    float current_vx = ship->Velocity.x;
+                    float thrust = accel;
+                    if (dir_x * current_vx < 0) {
+                        thrust = Brake;
+                    }
+                    ship->Velocity.x += dir_x * thrust;
+                }
             }
             break;
             
         //IT_MoveL: 上下操作 青
         case IT_MoveL: 
-            checkDelta.x = 0.0f; // Xは動かさない
-            checkDelta.y = delta.y;
-
-            if (stick_len > 0.1f && CollisionInSpace(ship, checkDelta)) {
-                ship->point.y += delta.y;
-                fprintf(stderr, "[Ship] Move Y: %.1f\n", ship->point.y);
+            if (stick_len > 0.1f) {
+                float dir_y = stick_vec.y / stick_len;
+                if (fabsf(dir_y) > 0.5) {
+                    float current_vy = ship->Velocity.y;
+                    float thrust = accel;
+                    if (dir_y * current_vy < 0) {
+                        thrust = Brake;
+                    }
+                    ship->Velocity.y += dir_y * thrust;
+                }
             }
             break;
         
@@ -411,6 +411,35 @@ void UpdateEnemy(void)
             }
         }
     }
+}
+
+void UpdateSdhipOperate(void)
+{
+    CharaInfo *ship = &game_info.chinf[ID_SHIP];
+
+    const float friction = 1.0f;
+    const float max_speed = 10.0f;
+
+    float current_speed = sqrtf(ship->Velocity.x * ship->Velocity.x + ship->Velocity.y * ship->Velocity.y);
+    if (current_speed > max_speed) {
+        ship->Velocity.x = (ship->Velocity.x / current_speed) * max_speed;
+        ship->Velocity.y = (ship->Velocity.y / current_speed) * max_speed;
+    }
+
+    FloatPoint delta = {ship->Velocity.x, ship->Velocity.y};
+
+    if (CollisionInSpace(ship, delta)) {
+        ship->point.x += ship->Velocity.x;
+        ship->point.y += ship->Velocity.y;
+    } else {
+        // 壁に衝突した場合の作用（ここでは停止させています）
+        ship->Velocity.x = 0;
+        ship->Velocity.y = 0;
+    }
+    // 3. 摩擦処理
+    // 1.0 を掛けるので、速度は減りません（等速直線運動を維持）
+    ship->Velocity.x *= friction;
+    ship->Velocity.y *= friction;
 }
 
 void UpdateBullets(void)
