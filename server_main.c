@@ -74,6 +74,7 @@ static Uint32 SignalHandler(Uint32 interval, void *param)
 {
 	//SendDiamondCommand();
 	UpdateEnemy();
+	UpdateSdhipOperate();
 	UpdateBullets();
 	UpdateOxygen();
 	BroadcastGameInfo();

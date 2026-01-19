@@ -29,7 +29,7 @@
 
 #define SPACESHIP_SIZE 500
 
-#define MAX_ENEMY 20
+#define MAX_ENEMY 0
 #define ENEMY_ID 6
 #define ENEMY_SPEED 2.0f
 #define ENEMY_RANGE 1000.0f
@@ -129,6 +129,7 @@ typedef struct {
     float velocity;   /* 現在の速度の大きさ */
     FloatPoint dir;   /* 現在の方向（大きさ最大1となる成分） */
     FloatPoint point; /* 現在の座標 */
+    FloatPoint Velocity;
     int w;            /* キャラの幅 */
     int h;            /* 　　　　高さ */
     int r;
