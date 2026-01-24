@@ -9,13 +9,16 @@ static SDL_Texture *player[4];
 static SDL_Texture *enemy;
 static SDL_Texture *spaceShip;
 static SDL_Texture *BackGround;
-static SDL_Texture *ObstaclesTex;
+static SDL_Texture *ObstaclesTex[OBSTACLE_TYPE_NUM];
 static SDL_Texture *GoalOBJTex;
 static GameInfo game_info;
 static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
 
 static int obstacles_num = 0;
 static int obstacles_loaded = 0;
+
+static int g_shake_x = 0;
+static int g_shake_y = 0;
 
 Uint32 lastTick;
 Uint32 blinkTick;
@@ -127,8 +130,8 @@ static inline void WorldToScreen(float obj_x, float obj_y, float ship_x, float s
 {
     int center_x = MAX_WINDOW_X / 2;
     int center_y = MAX_WINDOW_Y / 2;
-    *out_x = (int)(obj_x - ship_x) + center_x;
-    *out_y = (int)(obj_y - ship_y) + center_y;
+    *out_x = (int)(obj_x - ship_x) + center_x + g_shake_x;
+    *out_y = (int)(obj_y - ship_y) + center_y + g_shake_y;
 }
 
 
@@ -137,10 +140,18 @@ void RenderShip(SDL_Renderer* renderer, SDL_Texture* tex)
     SDL_Rect dst;
     dst.w = SPACESHIP_SIZE;
     dst.h = SPACESHIP_SIZE;
-    dst.x = MAX_WINDOW_X/2-dst.w/2;
-    dst.y = MAX_WINDOW_Y/2-dst.h/2;
+    dst.x = MAX_WINDOW_X/2-dst.w/2 + g_shake_x;
+    dst.y = MAX_WINDOW_Y/2-dst.h/2 + g_shake_y;
+
+    CharaInfo* ship = &game_info.chinf[ID_SHIP];
+    if (ship->damage_timer > 0) {
+        // ダメージ中は画像を赤くする (R=255, G=0, B=0)
+        SDL_SetTextureColorMod(tex, 255, 0, 0);
+    }
 
     SDL_RenderCopy(renderer, tex, NULL, &dst);
+
+    SDL_SetTextureColorMod(tex, 255, 255, 255);
 }
 
 void RenderBar(
@@ -261,7 +272,7 @@ void RenderOxgeLevel(SDL_Renderer* renderer, TTF_Font* tex, float amount, float 
     dst.y = 40;   // 上から少し下げる
     SDL_RenderCopy(renderer, textTex, NULL, &dst);
 
-    if((int)(amount*100/max) < 50){
+    if((int)(amount*100/max) < 30){
         dst.w = alartmsg->w;
         dst.h = alartmsg->h;
         dst.x = MAX_WINDOW_X/2 - alartmsg->w/2;
@@ -331,15 +342,14 @@ void RenderBackGround(SDL_Renderer* renderer, SDL_Texture* tex, int x, int y)
     src.y = y;
     dst.w = MAX_WINDOW_X;
     dst.h = MAX_WINDOW_Y;
-    dst.x = 0;
-    dst.y = 0;
+    dst.x = 0 + g_shake_x;
+    dst.y = 0 + g_shake_y;
 
     SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
-void RenderObstacles(SDL_Renderer* renderer, SDL_Texture* tex, float ship_x, float ship_y)
+void RenderObstacles(SDL_Renderer* renderer, float ship_x, float ship_y)
 {
-    if (!tex) return;
     int center_x = MAX_WINDOW_X / 2;
     int center_y = MAX_WINDOW_Y / 2;
 
@@ -356,7 +366,15 @@ void RenderObstacles(SDL_Renderer* renderer, SDL_Texture* tex, float ship_x, flo
         // 画面外なら描画をスキップして高速化
         if (dst.x + dst.w < 0 || dst.x > MAX_WINDOW_X || dst.y + dst.h < 0 || dst.y > MAX_WINDOW_Y) continue;
 
-        SDL_RenderCopy(renderer, tex, NULL, &dst);
+        int type_id = ObstaclesInfo[i].type;
+
+        if (type_id < 0 || type_id >= OBSTACLE_TYPE_NUM) {
+            type_id = 0;
+        }
+
+        if (ObstaclesTex[type_id]) {
+        SDL_RenderCopy(renderer, ObstaclesTex[type_id], NULL, &dst);
+        }
     }
     // --- ゴールの描画 ---
     if (GoalOBJTex) {
@@ -440,7 +458,9 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     player[3] = IMG_LoadTexture(gMainRenderer, "materials_win/player4.png");
     spaceShip = IMG_LoadTexture(gMainRenderer, "materials_win/spaceship.png");
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground1.png"); 
-    ObstaclesTex = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle.png");
+    ObstaclesTex[0] = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle0.png");
+    ObstaclesTex[1] = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle1.png");
+    ObstaclesTex[2] = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle2.png");
     GoalOBJTex = IMG_LoadTexture(gMainRenderer, "materials_win/goal.png");
 
     /** マップ情報読込 **/
@@ -466,14 +486,22 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
             break;
         }
         if (obstacles_num < OBSTACLE_MAXNUM) {
-            int x, y, r;
-            if (sscanf(linebuf, "%d %d %d", &x, &y, &r) == 3) {
+            int x, y, r, type;
+            int items = sscanf(linebuf, "%d %d %d %d", &x, &y, &r, &type);
+
+            if (items >= 3){
                 ObstaclesInfo[obstacles_num].point.x = x;
                 ObstaclesInfo[obstacles_num].point.y = y;
                 ObstaclesInfo[obstacles_num].r       = r;
+            }
+            if (items == 4) {
+                ObstaclesInfo[obstacles_num].type = type;
+            } else {
+                ObstaclesInfo[obstacles_num].type = 0;
+            }
                 obstacles_num++;
                 obstacles_loaded++;
-            }
+            
         }
     }
     fclose(fp);
@@ -532,18 +560,24 @@ void RenderWindow(void)
             float ship_world_x = game_info.chinf[4].point.x;
             float ship_world_y = game_info.chinf[4].point.y;
 
+            CharaInfo* ship = &game_info.chinf[4];
+
+            // ダメージを受けた直後（タイマーが残っている）なら揺らす
+            // 例: timerが60から始まり、40になるまでの20フレーム間揺らす
+            if (ship->damage_timer > 40) { 
+                int power = 10; // 揺れ幅
+                g_shake_x = (rand() % (power * 2)) - power; // -10 ～ +10
+                g_shake_y = (rand() % (power * 2)) - power;
+            } else {
+                // 揺れ終了
+                g_shake_x = 0;
+                g_shake_y = 0;
+            }
+
             RenderBackGround(gMainRenderer, BackGround, (int)(ship_world_x/40), (int)(ship_world_y/40));
-            RenderObstacles(gMainRenderer, ObstaclesTex, ship_world_x, ship_world_y);
+            RenderObstacles(gMainRenderer, ship_world_x, ship_world_y);
 
-            /*Uint8 r = (int)fabs(ship_x) % 255;
-            Uint8 g = (int)fabs(ship_y) % 255;
-            SDL_SetRenderDrawColor(gMainRenderer, r, g, 50, 255);
-            SDL_RenderClear(gMainRenderer);*/
             RenderShip(gMainRenderer, spaceShip);
-
-            /*for(int i=0; i<4; i++){
-                RenderChara(gMainRenderer, &game_info.chinf[i], player[i], i);
-            }*/
 
             for(int i=0; i<CHARA_NUM; i++){
                 

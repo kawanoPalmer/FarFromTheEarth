@@ -393,11 +393,18 @@ void UpdateCharaPosition(const ClientCommand *cmd)
     if (id < 0 || id >= MAX_CLIENTS) return;
 
     CharaInfo *ch = &game_info.chinf[id];
+    float oxy_ratio = game_info.oxy_amount / game_info.oxy_max;
+    if (oxy_ratio < 0.0f) oxy_ratio = 0.0f;
+    if (oxy_ratio > 1.0f) oxy_ratio = 1.0f;
+
+    const float min_speed = 0.05f;
+    float speed_multiplier = min_speed + (1.0f - min_speed) * oxy_ratio;
+    float actual_speed = cmd->velocity * speed_multiplier;
 
     // 移動量計算
-    if(ColorDecision(mask, ch->point.x+cmd->dir.x*cmd->velocity, ch->point.y+cmd->dir.y * cmd->velocity) != FT_Unpassible){
-    ch->point.x += cmd->dir.x * cmd->velocity;
-    ch->point.y += cmd->dir.y * cmd->velocity;
+    if(ColorDecision(mask, ch->point.x+cmd->dir.x * actual_speed, ch->point.y+cmd->dir.y * actual_speed) != FT_Unpassible){
+    ch->point.x += cmd->dir.x * actual_speed;
+    ch->point.y += cmd->dir.y * actual_speed;
     }
 
     // 画面端チェック
@@ -448,10 +455,15 @@ void UpdateEnemy(void)
             enemy->point.y += move_y;
             }
             else {
-                if (rand() % 20 == 0) {
+                /*if (rand() % 20 == 0) {
                     ship->hp -= 1;
-                    fprintf(stderr, "Hit! Ship HP: %d\n", ship->hp);
-
+                    fprintf(stderr, "Hit! Ship HP: %d\n", ship->hp);*/
+                    if (ship->damage_timer == 0) {
+                    ship->hp -= 10; 
+                    ship->damage_timer = 60;
+                    fprintf(stderr, "Crash! Ship HP: %d\n", ship->hp);
+                    enemy->stts = 0;
+                    }
                     if (ship->hp <= 0) {
                         game_info.stts = GS_End;
                     }
@@ -459,11 +471,15 @@ void UpdateEnemy(void)
             }
         }
     }
-}
+
 
 void UpdateSdhipOperate(void)
 {
     CharaInfo *ship = &game_info.chinf[ID_SHIP];
+
+    if (ship->damage_timer > 0) {
+    ship->damage_timer--;
+}
 
     const float friction = 0.995f;
     const float max_speed = 8.0f;

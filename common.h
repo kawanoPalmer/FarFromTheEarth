@@ -24,17 +24,18 @@
 
 #define CHARATYPE_MAXNUM 4 // キャラタイプ総数
 
-#define OBSTACLE_MAXNUM 10
+#define OBSTACLE_MAXNUM 100
 #define CHARA_NUM (MAX_CLIENTS + 1 + 1 + MAX_ENEMY) //クライアント(4) + ゴール(1) + 敵(1) + 宇宙船(1)
 
 #define SPACESHIP_SIZE 500
+#define OBSTACLE_TYPE_NUM 3
 
-#define MAX_ENEMY 0
+#define MAX_ENEMY 200
 #define ENEMY_ID 6
 #define ENEMY_SPEED 2.0f
 #define ENEMY_RANGE 1000.0f
 
-#define SPAWN_RANGE 3800     // 出現エリアの広さ 
+#define SPAWN_RANGE 12000     // 出現エリアの広さ 
 #define SAFE_RADIUS 1200.0f   // 安全地帯の半径
 
 #define ID_SHIP 4
@@ -134,6 +135,7 @@ typedef struct {
     int h;            /* 　　　　高さ */
     int r;
     int hp;           //hp(宇宙船しかつかわんかも)
+    int damage_timer;
 } CharaInfo;
 
 /* ゲームの情報 (この構造体をサーバーからブロードキャストで送信したりする想定)*/
