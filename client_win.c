@@ -11,6 +11,7 @@ static SDL_Texture *spaceShip;
 static SDL_Texture *BackGround;
 static SDL_Texture *ObstaclesTex[OBSTACLE_TYPE_NUM];
 static SDL_Texture *GoalOBJTex;
+static SDL_Texture *EngineFireTex;
 static GameInfo game_info;
 static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
 
@@ -35,6 +36,7 @@ int RecvInfo(GameInfo *info){
     game_info.stts = info->stts;
     game_info.oxy_amount = info->oxy_amount;
     game_info.oxy_max = info->oxy_max;
+    game_info.fireEffect = info->fireEffect;
     for(int i=0; i<CHARA_NUM; i++){
     game_info.chinf[i] = info->chinf[i];
     if (i==4){
@@ -419,7 +421,24 @@ void RenderBullets(SDL_Renderer* renderer, float ship_x, float ship_y)
     }
 }
 
-
+void RenderEngineFire(SDL_Renderer* renderer, SDL_Texture* tex)
+{
+    SDL_Rect dst;
+    dst.w = SPACESHIP_SIZE;
+    dst.h = SPACESHIP_SIZE;
+    dst.x = MAX_WINDOW_X/2-dst.w/2;
+    dst.y = MAX_WINDOW_Y/2-dst.h/2;
+    if(game_info.fireEffect != 4)
+    {
+        SDL_Rect src;
+        src.w = 512;
+        src.h = 512;
+        src.x = 512 * game_info.fireEffect;
+        src.y = 0;
+        SDL_RenderCopy(renderer, tex, &src, &dst);
+    }
+    game_info.fireEffect = 4;
+}
 
 /* ???????????????????
  *
@@ -461,6 +480,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     ObstaclesTex[0] = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle0.png");
     ObstaclesTex[1] = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle1.png");
     ObstaclesTex[2] = IMG_LoadTexture(gMainRenderer, "materials_win/obstacle2.png");
+    EngineFireTex = IMG_LoadTexture(gMainRenderer, "materials_win/fire.png");
     GoalOBJTex = IMG_LoadTexture(gMainRenderer, "materials_win/goal.png");
 
     /** マップ情報読込 **/
@@ -508,6 +528,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
 
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
     enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy_sample.png");
+    game_info.fireEffect = 4;
     return 0;
 }
 
@@ -606,6 +627,8 @@ void RenderWindow(void)
             RenderOxgeLevel(gMainRenderer, font, game_info.oxy_amount, game_info.oxy_max);
             ShipHp(gMainRenderer, font, game_info.chinf[ID_SHIP].hp);
             RenderBullets(gMainRenderer, ship_world_x, ship_world_y);
+            RenderEngineFire(gMainRenderer, EngineFireTex);
+
             SDL_RenderPresent(gMainRenderer);
             break;
         }

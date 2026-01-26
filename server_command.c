@@ -189,6 +189,11 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
                 if (fabsf(dir_x) > 0.5) {
                     float current_vx = ship->Velocity.x;
                     float thrust = accel;
+                    if(dir_x >= 0.0f)
+                        game_info.fireEffect = 0;
+                    else
+                        game_info.fireEffect = 1;
+                    
                     if (dir_x * current_vx < 0) {
                         thrust = Brake;
                     }
@@ -204,6 +209,7 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
                 if (fabsf(dir_y) > 0.5) {
                     float current_vy = ship->Velocity.y;
                     float thrust = accel;
+                    game_info.fireEffect = (dir_y >= 0.0f) ? 2 : 3;
                     if (dir_y * current_vy < 0) {
                         thrust = Brake;
                     }
@@ -687,6 +693,8 @@ void InitGameInfo(void)
     game_info.oxy_amount = game_info.oxy_max;
     game_info.oxy_progress = 0;
     game_info.oxy_required = 50;
+
+    game_info.fireEffect = 0;
 
     // 弾の初期化
     for(int i=0; i<MAX_BULLETS; i++){
