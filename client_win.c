@@ -131,6 +131,22 @@ void RenderResult(SDL_Renderer* renderer)
     SDL_DestroyTexture(timeTex);
     SDL_FreeSurface(timeSurface);
 
+    char killBuf[64];
+    snprintf(killBuf, sizeof(killBuf), "撃破数  %d", game_info.killCount);
+
+    SDL_Surface* killSurface = TTF_RenderUTF8_Blended(font, killBuf, textColor);
+    SDL_Texture* killTex = SDL_CreateTextureFromSurface(gMainRenderer, killSurface);
+
+    SDL_Rect killDst;
+    killDst.w = killSurface->w;
+    killDst.h = killSurface->h;
+    killDst.x = (MAX_WINDOW_X - killDst.w) / 2;
+    killDst.y = timeDst.y + timeDst.h + 10;
+
+    SDL_RenderCopy(gMainRenderer, killTex, NULL, &killDst);
+
+    SDL_FreeSurface(killSurface);
+    SDL_DestroyTexture(killTex);
 
 }
 

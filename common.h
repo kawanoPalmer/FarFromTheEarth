@@ -148,6 +148,7 @@ typedef struct {
     int oxy_progress;// 現在の進捗
     int oxy_required;// タスク完了までに必要な進捗
     int fireEffect;  // エンジンのエフェクトの向きを送受
+    int killCount; //倒した敵の数
 } GameInfo;
 
 
