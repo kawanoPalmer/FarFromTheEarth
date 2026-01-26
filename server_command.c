@@ -694,7 +694,7 @@ void InitGameInfo(void)
     game_info.oxy_progress = 0;
     game_info.oxy_required = 50;
 
-    game_info.fireEffect = 0;
+    game_info.fireEffect = 4;
 
     // 弾の初期化
     for(int i=0; i<MAX_BULLETS; i++){
