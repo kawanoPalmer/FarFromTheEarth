@@ -5,7 +5,6 @@
 
 extern joyconlib_t jc;
 int cid;
-int aniCnt[4];
 
 /*JoyCon入力し、Directionから正規化
 サーバへ送信*/

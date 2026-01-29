@@ -13,6 +13,8 @@ static int gReady[MAX_CLIENTS] = {0,0,0,0};
 static int obstacles_num = 0;
 static int obstacles_loaded = 0;
 
+static Uint32 lastFrameTick[CHARA_NUM];
+
 SDL_Surface* mask;
 
 int CheckStartCondition(void) {
@@ -26,6 +28,21 @@ int CheckStartCondition(void) {
         return 0;
     }
     return 1;
+}
+
+void FrameFoward(const ClientCommand *cmd){
+    Uint32 Now = SDL_GetTicks();
+    int id = cmd->client_id;
+    if(Now - lastFrameTick[id] >= 100){
+        lastFrameTick[id] = Now;
+        game_info.chinf[id].frameNum ++;
+        if(game_info.chinf[id].frameNum == 3)
+            game_info.chinf[id].frameNum = 0;
+    }
+    if(cmd->dir.x > 0)
+        game_info.chinf[id].faceLeft = 0;
+    else if(cmd->dir.x < 0)
+        game_info.chinf[id].faceLeft = 1;
 }
 
 int ColorDecision(SDL_Surface *surface, int x, int y){
@@ -409,6 +426,8 @@ void UpdateCharaPosition(const ClientCommand *cmd)
 
     // 移動量計算
     if(ColorDecision(mask, ch->point.x+cmd->dir.x * actual_speed, ch->point.y+cmd->dir.y * actual_speed) != FT_Unpassible){
+        if(cmd->dir.x != 0 || cmd->dir.y != 0)
+            FrameFoward(cmd);
     ch->point.x += cmd->dir.x * actual_speed;
     ch->point.y += cmd->dir.y * actual_speed;
     }
@@ -655,6 +674,9 @@ void InitGameInfo(void)
         game_info.chinf[i].point.y = 370+2*i;
         game_info.chinf[i].w       = 26;
         game_info.chinf[i].h       = 43;
+        game_info.chinf[i].frameNum = 0;
+        game_info.chinf[i].faceLeft = 1;
+        lastFrameTick[i] = SDL_GetTicks();
     }
 
     /* 敵の初期化*/

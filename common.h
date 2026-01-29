@@ -136,6 +136,8 @@ typedef struct {
     int r;
     int hp;           //hp(宇宙船しかつかわんかも)
     int damage_timer;
+    int frameNum;
+    int faceLeft;
 } CharaInfo;
 
 /* ゲームの情報 (この構造体をサーバーからブロードキャストで送信したりする想定)*/

@@ -81,7 +81,13 @@ void RenderTitle(SDL_Renderer* renderer, int cid)
     dst.x = 1230;
     dst.y = 717;
 
-    SDL_RenderCopy(renderer, player[cid], NULL, &dst); 
+    SDL_Rect src;
+    src.w = 26;
+    src.h = 43;
+    src.x = 0;
+    src.y = 0;
+
+    SDL_RenderCopy(renderer, player[cid], &src, &dst); 
 
     SDL_DestroyTexture(tex);
     SDL_FreeSurface(msg);
@@ -166,12 +172,14 @@ void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int ci
     dst.y = ch->point.y-ch->h/2;
     dst.w = ch->w;
     dst.h = ch->h;
-    src.x = 0;
+    src.x = 26 * ch->frameNum;
     src.y = 0;
     src.w = 26;
     src.h = 43;
-
-    SDL_RenderCopy(renderer, tex, &src, &dst);
+    if(ch->faceLeft == 1)
+        SDL_RenderCopyEx(renderer, tex, &src, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
+    else
+        SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
 static inline void WorldToScreen(float obj_x, float obj_y, float ship_x, float ship_y, int *out_x, int *out_y)
