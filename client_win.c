@@ -26,6 +26,10 @@ Uint32 lastTick;
 Uint32 blinkTick;
 SDL_bool blinkRed = SDL_FALSE;
 
+static Uint32 playStartTick = 0;
+static Uint32 playEndTick   = 0;
+static GameStts prev_stts;
+
 const GameInfo* GetGameInfo(void)
 {
     return &game_info;
@@ -123,6 +127,35 @@ void RenderResult(SDL_Renderer* renderer)
     // 描画
     SDL_RenderCopy(gMainRenderer, texture, NULL, &dst);
     SDL_DestroyTexture(texture);
+
+    Uint32 playTimeMs = playEndTick - playStartTick; int sec = playTimeMs / 1000; int min = sec / 60; sec %= 60;
+    char timeBuf[64]; 
+    snprintf(timeBuf, sizeof(timeBuf), "生存時間 %02d:%02d", min, sec);
+    SDL_Surface* timeSurface = TTF_RenderUTF8_Blended(font, timeBuf, textColor); 
+    SDL_Texture* timeTex = SDL_CreateTextureFromSurface(gMainRenderer, timeSurface); 
+    SDL_Rect timeDst; 
+    timeDst.w = timeSurface->w; timeDst.h = timeSurface->h;
+    timeDst.x = (MAX_WINDOW_X - timeDst.w) / 2; timeDst.y = dst.y + dst.h + 20; 
+    SDL_RenderCopy(gMainRenderer, timeTex, NULL, &timeDst);
+    SDL_DestroyTexture(timeTex);
+    SDL_FreeSurface(timeSurface);
+
+    char killBuf[64];
+    snprintf(killBuf, sizeof(killBuf), "撃破数  %d", game_info.killCount);
+
+    SDL_Surface* killSurface = TTF_RenderUTF8_Blended(font, killBuf, textColor);
+    SDL_Texture* killTex = SDL_CreateTextureFromSurface(gMainRenderer, killSurface);
+
+    SDL_Rect killDst;
+    killDst.w = killSurface->w;
+    killDst.h = killSurface->h;
+    killDst.x = (MAX_WINDOW_X - killDst.w) / 2;
+    killDst.y = timeDst.y + timeDst.h + 10;
+
+    SDL_RenderCopy(gMainRenderer, killTex, NULL, &killDst);
+
+    SDL_FreeSurface(killSurface);
+    SDL_DestroyTexture(killTex);
 
 }
 
@@ -542,6 +575,9 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
     enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy.png");
     game_info.fireEffect = 4;
+
+    prev_stts = GS_Title;
+    
     return 0;
 }
 
@@ -583,6 +619,15 @@ void RenderWindow(void)
 {
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 255, 255);
     SDL_RenderClear(gMainRenderer);
+    // 状態遷移チェック
+    if (prev_stts == GS_Title && game_info.stts == GS_Playing) {
+        playStartTick = SDL_GetTicks();
+    }
+    if (prev_stts == GS_Playing && game_info.stts == GS_Result) {
+        playEndTick = SDL_GetTicks();
+    }
+    prev_stts = game_info.stts;
+
     switch(game_info.stts){
         case GS_Title:
             RenderBackGround(gMainRenderer, BackGround, 0,0);

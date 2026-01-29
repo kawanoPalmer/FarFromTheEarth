@@ -542,6 +542,7 @@ void UpdateBullets(void)
             if(dist < (enemy->w/2 + BULLET_R)){
                 enemy->stts = CS_Dead;         // 敵を倒す
                 game_info.bullets[i].active = 0; // 弾も消える
+                game_info.killCount++;
                 break; 
             }
         }
@@ -695,6 +696,8 @@ void InitGameInfo(void)
     game_info.oxy_required = 50;
 
     game_info.fireEffect = 4;
+
+    game_info.killCount = 0;
 
     // 弾の初期化
     for(int i=0; i<MAX_BULLETS; i++){
