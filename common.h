@@ -158,7 +158,6 @@ typedef struct {
     int act;           // 入力ボタン
     FloatPoint dir;     // 入力方向（スティック方向）
     float velocity;     // 速度（移動や操作の強さ）
-    int animationCounter[4];
 } ClientCommand;
 
 typedef struct{
