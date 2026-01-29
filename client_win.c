@@ -17,6 +17,7 @@ static CharaInfo ObstaclesInfo[OBSTACLE_MAXNUM];
 
 static int obstacles_num = 0;
 static int obstacles_loaded = 0;
+extern int cid;
 
 static int g_shake_x = 0;
 static int g_shake_y = 0;
@@ -53,12 +54,12 @@ int RecvInfo(GameInfo *info){
 }
 
 
-void RenderTitle(SDL_Renderer* renderer)
+void RenderTitle(SDL_Renderer* renderer, int cid)
 {
     SDL_Color white = {255, 255, 255, 255};
 
     // --- 「準備OK!」 ---
-    SDL_Surface* msg = TTF_RenderUTF8_Solid(font, "xボタンで準備OK!", white);
+    SDL_Surface* msg = TTF_RenderUTF8_Solid(font, "xボタンで準備OK!　あなたのキャラクター: ", white);
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, msg);
 
     SDL_Rect dst = {
@@ -68,7 +69,15 @@ void RenderTitle(SDL_Renderer* renderer)
         .y = 700
     };
 
+
     SDL_RenderCopy(renderer, tex, NULL, &dst);
+
+    dst.w = 26;
+    dst.h = 43;
+    dst.x = 1230;
+    dst.y = 717;
+
+    SDL_RenderCopy(renderer, player[cid], NULL, &dst); 
 
     SDL_DestroyTexture(tex);
     SDL_FreeSurface(msg);
@@ -119,13 +128,17 @@ void RenderResult(SDL_Renderer* renderer)
 
 void RenderChara(SDL_Renderer* renderer, CharaInfo* ch, SDL_Texture* tex, int cid)
 {
-    SDL_Rect dst;
+    SDL_Rect dst, src;
     dst.x = ch->point.x-ch->w/2;
     dst.y = ch->point.y-ch->h/2;
     dst.w = ch->w;
     dst.h = ch->h;
+    src.x = 0;
+    src.y = 0;
+    src.w = 26;
+    src.h = 43;
 
-    SDL_RenderCopy(renderer, tex, NULL, &dst);
+    SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
 static inline void WorldToScreen(float obj_x, float obj_y, float ship_x, float ship_y, int *out_x, int *out_y)
@@ -527,7 +540,7 @@ int InitWindow(int clientID, int num, char name[][MAX_NAME_SIZE])
     fclose(fp);
 
     BackGround = IMG_LoadTexture(gMainRenderer, "materials_win/spacebackground (1).png"); 
-    enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy_sample.png");
+    enemy = IMG_LoadTexture(gMainRenderer, "materials_win/enemy.png");
     game_info.fireEffect = 4;
     return 0;
 }
@@ -573,7 +586,7 @@ void RenderWindow(void)
     switch(game_info.stts){
         case GS_Title:
             RenderBackGround(gMainRenderer, BackGround, 0,0);
-            RenderTitle(gMainRenderer);
+            RenderTitle(gMainRenderer, cid);
             SDL_RenderPresent(gMainRenderer);
             break;
 

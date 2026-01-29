@@ -652,8 +652,8 @@ void InitGameInfo(void)
         game_info.chinf[i].type = CT_Player;
         game_info.chinf[i].point.x = 695;
         game_info.chinf[i].point.y = 370+2*i;
-        game_info.chinf[i].w       = 20;
-        game_info.chinf[i].h       = 30;
+        game_info.chinf[i].w       = 26;
+        game_info.chinf[i].h       = 43;
     }
 
     /* 敵の初期化*/
@@ -664,8 +664,8 @@ void InitGameInfo(void)
 
         //game_info.chinf[id].point.x = (rand() % 2000) - 1000;
         //game_info.chinf[id].point.y = (rand() % 2000) - 1000;
-        game_info.chinf[id].w = 40;
-        game_info.chinf[id].h = 40;
+        game_info.chinf[id].w = 100;
+        game_info.chinf[id].h = 100;
         float x, y, dist;
 
         do {
@@ -694,7 +694,7 @@ void InitGameInfo(void)
     game_info.oxy_progress = 0;
     game_info.oxy_required = 50;
 
-    game_info.fireEffect = 0;
+    game_info.fireEffect = 4;
 
     // 弾の初期化
     for(int i=0; i<MAX_BULLETS; i++){

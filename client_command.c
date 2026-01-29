@@ -4,6 +4,8 @@
 #include <joyconlib.h>
 
 extern joyconlib_t jc;
+int cid;
+int aniCnt[4];
 
 /*JoyCon入力し、Directionから正規化
 サーバへ送信*/
@@ -30,6 +32,8 @@ void SendClientCommand(int client_id)
     cmd.act       = act;
     cmd.dir       = vec;         // 移動方向ベクトル
     cmd.velocity  = 1.0f;        // 速度固定
+
+    cid = client_id;
 
     // 構造体から送信用バイト列に変換
     PackClientCommand(&cmd, data, &dataSize);
