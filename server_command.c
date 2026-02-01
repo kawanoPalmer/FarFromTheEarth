@@ -217,6 +217,9 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
                     ship->Velocity.x += dir_x * thrust;
                 }
             }
+            else {
+                game_info.fireEffect = 4;
+            }
             break;
             
         //IT_MoveL: 上下操作 青
@@ -232,6 +235,9 @@ void ExecuteCommand(CharaInfo *ch, const ClientCommand *cmd)
                     }
                     ship->Velocity.y += dir_y * thrust;
                 }
+            }
+            else {
+                game_info.fireEffect = 4;
             }
             break;
         
