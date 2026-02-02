@@ -490,7 +490,7 @@ void UpdateEnemy(void)
                     ship->hp -= 1;
                     fprintf(stderr, "Hit! Ship HP: %d\n", ship->hp);*/
                     if (ship->damage_timer == 0) {
-                    ship->hp -= 10; 
+                    ship->hp -= 50; 
                     ship->damage_timer = 60;
                     fprintf(stderr, "Crash! Ship HP: %d\n", ship->hp);
                     enemy->stts = 0;
@@ -715,7 +715,7 @@ void InitGameInfo(void)
     game_info.chinf[ID_SHIP].point.x = offset_x; 
     game_info.chinf[ID_SHIP].point.y = offset_y;
     game_info.chinf[ID_SHIP].r = SPACESHIP_SIZE/2;
-    game_info.chinf[ID_SHIP].hp = 200;
+    game_info.chinf[ID_SHIP].hp = 1000;
 
     // 酸素タスク初期化
     game_info.oxy_max = 30.0f;
