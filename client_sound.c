@@ -8,6 +8,8 @@ static Mix_Chunk* se_shot = NULL;
 static Mix_Chunk* se_alarm = NULL;
 static Mix_Chunk* se_damage = NULL;
 static Mix_Chunk* se_engine = NULL;
+Mix_Music* bgm_interstellar = NULL;
+
 
 int InitSound(void)
 {
@@ -16,6 +18,17 @@ int InitSound(void)
     se_alarm = Mix_LoadWAV("materials_sound/se_alarm.mp3");
     se_damage = Mix_LoadWAV("materials_sound/se_damage.mp3");
     se_engine = Mix_LoadWAV("materials_sound/se_engine2.mp3");
+    bgm_interstellar = Mix_LoadMUS("materials_sound/Interstellar Travel.mp3");
+
+    if (!bgm_interstellar)
+    fprintf(stderr, "Failed to load BGM: %s\n", Mix_GetError());
+
+    Mix_VolumeMusic(64);
+    /* ★ BGM 再生開始（ループ） */
+    if (bgm_interstellar) {
+        Mix_PlayMusic(bgm_interstellar, -1);
+    }
+
     return 0;
 }
 
