@@ -15,7 +15,7 @@ int InitSound(void)
     se_shot = Mix_LoadWAV("materials_sound/se_shot.wav");
     se_alarm = Mix_LoadWAV("materials_sound/se_alarm.mp3");
     se_damage = Mix_LoadWAV("materials_sound/se_damage.mp3");
-    se_engine = Mix_LoadWAV("materials_sound/se_engine.mp3");
+    se_engine = Mix_LoadWAV("materials_sound/se_engine2.mp3");
     return 0;
 }
 
