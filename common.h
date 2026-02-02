@@ -48,7 +48,7 @@
 
 #define MAX_BULLETS 20      // 画面に出せる弾の最大数
 #define BULLET_SPEED 15.0f  // 弾の速さ
-#define BULLET_R 5          // 弾の半径
+#define BULLET_R 8          // 弾の半径
 
 typedef enum {
     IT_MoveL = 0,

@@ -490,7 +490,7 @@ void UpdateEnemy(void)
                     ship->hp -= 1;
                     fprintf(stderr, "Hit! Ship HP: %d\n", ship->hp);*/
                     if (ship->damage_timer == 0) {
-                    ship->hp -= 10; 
+                    ship->hp -= 50; 
                     ship->damage_timer = 60;
                     fprintf(stderr, "Crash! Ship HP: %d\n", ship->hp);
                     enemy->stts = 0;
